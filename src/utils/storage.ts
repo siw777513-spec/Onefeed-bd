@@ -14,20 +14,20 @@ const STORAGE_KEYS = {
 };
 
 export const DEFAULT_PROFILE: UserProfile = {
-  name: 'Alex Vance (Owner)',
-  handle: '@alex_vance',
-  email: 'siw777513@gmail.com',
-  avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80',
-  coverImage: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80',
-  bio: 'Owner & Lead Engineer of OneFeed platform. 🛡️ Global Admin',
-  followersCount: 1240,
-  followingCount: 380,
-  isAdmin: true,
+  name: 'Guest User',
+  handle: '@guest',
+  email: '',
+  avatar: 'https://i.pravatar.cc/150?u=guest',
+  coverImage: '',
+  bio: 'Welcome to OneFeed!',
+  followersCount: 0,
+  followingCount: 0,
+  isAdmin: false,
   coinBalance: 500,
-  totalEarnings: 148.50,
-  availableBalance: 112.00,
-  subscribersCount: 28,
-  giftsReceivedCount: 142,
+  totalEarnings: 0,
+  availableBalance: 0,
+  subscribersCount: 0,
+  giftsReceivedCount: 0,
 };
 
 export const DEFAULT_SETTINGS: UserSettings = {
