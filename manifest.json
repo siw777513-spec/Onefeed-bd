@@ -1,0 +1,17 @@
+{
+  "name": "Onefeed Bangladesh",
+  "short_name": "Onefeed",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ff4500",
+  "description": "Bangladesh Social Media App",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/733/733547.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
