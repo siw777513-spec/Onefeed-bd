@@ -1,0 +1,6 @@
+{
+  "name": "OneFeed",
+  "description": "Mobile social media app featuring 5 independent side-by-side feed columns in a sleek dark theme.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
