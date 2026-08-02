@@ -6,11 +6,14 @@ import {
 } from "firebase/firestore";
 import { SocialItem, UserProfile } from '../types';
 
-// === COMPATIBILITY FIX - Build Success এর জন্য (এটা Delete করো না!) ===
+// === 100% COMPATIBILITY FIX - সব Build Error Fix ===
 export const STORAGE_KEYS = {
   PROFILE: 'onefeed_profile',
   ITEMS: 'onefeed_items_v2',
-  THEME: 'onefeed_theme'
+  THEME: 'onefeed_theme',
+  SETTINGS: 'onefeed_settings',
+  CURRENT_USER: 'onefeed_current_user',
+  USERS: 'onefeed_users'
 };
 
 export const DEFAULT_PROFILE: UserProfile = {
@@ -23,25 +26,31 @@ export const DEFAULT_PROFILE: UserProfile = {
   following: 0
 };
 
-export const getStoredProfile = () => {
+const safeGet = (key: string, fallback: any) => {
   try {
-    const d = localStorage.getItem(STORAGE_KEYS.PROFILE);
-    return d? JSON.parse(d) : DEFAULT_PROFILE;
-  } catch { return DEFAULT_PROFILE; }
+    const d = localStorage.getItem(key);
+    return d? JSON.parse(d) : fallback;
+  } catch { return fallback; }
 };
+const safeSet = (key: string, val: any) => localStorage.setItem(key, JSON.stringify(val));
 
-export const saveProfile = (p: any) => localStorage.setItem(STORAGE_KEYS.PROFILE, JSON.stringify(p));
-
-export const getStoredItems = () => {
-  try {
-    const d = localStorage.getItem(STORAGE_KEYS.ITEMS);
-    return d? JSON.parse(d) : [];
-  } catch { return []; }
-};
-
-export const saveItems = (items: any) => localStorage.setItem(STORAGE_KEYS.ITEMS, JSON.stringify(items));
+export const getStoredProfile = () => safeGet(STORAGE_KEYS.PROFILE, DEFAULT_PROFILE);
+export const saveProfile = (p: any) => safeSet(STORAGE_KEYS.PROFILE, p);
+export const getStoredItems = () => safeGet(STORAGE_KEYS.ITEMS, []);
+export const saveItems = (items: any) => safeSet(STORAGE_KEYS.ITEMS, items);
 export const getStoredTheme = () => localStorage.getItem(STORAGE_KEYS.THEME) || 'light';
 export const saveTheme = (t: string) => localStorage.setItem(STORAGE_KEYS.THEME, t);
+
+// === App.tsx এর জন্য যা যা লাগবে সব ===
+export const getStoredSettings = () => safeGet(STORAGE_KEYS.SETTINGS, { theme: 'light' });
+export const saveStoredSettings = (s: any) => safeSet(STORAGE_KEYS.SETTINGS, s);
+
+export const getStoredCurrentUser = () => safeGet(STORAGE_KEYS.CURRENT_USER, null);
+export const saveStoredCurrentUser = (u: any) => safeSet(STORAGE_KEYS.CURRENT_USER, u);
+export const logoutCurrentUser = () => localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
+
+export const getStoredUsers = () => safeGet(STORAGE_KEYS.USERS, []);
+export const saveStoredUsers = (u: any) => safeSet(STORAGE_KEYS.USERS, u);
 
 // === REAL FIREBASE - ONEFEED BD ===
 
@@ -57,7 +66,7 @@ export const createPost = async (post: any) => {
   const user = auth.currentUser;
   if (!user) throw new Error("Login করো");
   await addDoc(collection(db, "posts"), {
-   ...post,
+  ...post,
     userId: user.uid,
     userEmail: user.email,
     userName: user.displayName || user.email?.split('@')[0],
