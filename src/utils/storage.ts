@@ -2,13 +2,49 @@ import { db, auth } from '../lib/firebase';
 import {
   collection, doc, setDoc, getDoc, updateDoc,
   arrayUnion, arrayRemove, addDoc, serverTimestamp,
-  query, where, onSnapshot, orderBy, getDocs
+  query, onSnapshot, orderBy
 } from "firebase/firestore";
-import { SocialItem } from '../types';
+import { SocialItem, UserProfile } from '../types';
 
-// === ONEFEED BD - REAL SOCIAL SYSTEM ===
+// === COMPATIBILITY FIX - Build Success এর জন্য (এটা Delete করো না!) ===
+export const STORAGE_KEYS = {
+  PROFILE: 'onefeed_profile',
+  ITEMS: 'onefeed_items_v2',
+  THEME: 'onefeed_theme'
+};
 
-// 1. POSTS - Feed (সবাই সবার Post দেখবে)
+export const DEFAULT_PROFILE: UserProfile = {
+  id: 'default',
+  name: 'User',
+  handle: 'user',
+  avatar: 'https://i.pravatar.cc/150',
+  bio: 'OneFeed BD User',
+  followers: 0,
+  following: 0
+};
+
+export const getStoredProfile = () => {
+  try {
+    const d = localStorage.getItem(STORAGE_KEYS.PROFILE);
+    return d? JSON.parse(d) : DEFAULT_PROFILE;
+  } catch { return DEFAULT_PROFILE; }
+};
+
+export const saveProfile = (p: any) => localStorage.setItem(STORAGE_KEYS.PROFILE, JSON.stringify(p));
+
+export const getStoredItems = () => {
+  try {
+    const d = localStorage.getItem(STORAGE_KEYS.ITEMS);
+    return d? JSON.parse(d) : [];
+  } catch { return []; }
+};
+
+export const saveItems = (items: any) => localStorage.setItem(STORAGE_KEYS.ITEMS, JSON.stringify(items));
+export const getStoredTheme = () => localStorage.getItem(STORAGE_KEYS.THEME) || 'light';
+export const saveTheme = (t: string) => localStorage.setItem(STORAGE_KEYS.THEME, t);
+
+// === REAL FIREBASE - ONEFEED BD ===
+
 export const getPosts = (callback: (posts: SocialItem[]) => void) => {
   const q = query(collection(db, "posts"), orderBy("timestamp", "desc"));
   return onSnapshot(q, (snapshot) => {
@@ -21,7 +57,7 @@ export const createPost = async (post: any) => {
   const user = auth.currentUser;
   if (!user) throw new Error("Login করো");
   await addDoc(collection(db, "posts"), {
-  ...post,
+   ...post,
     userId: user.uid,
     userEmail: user.email,
     userName: user.displayName || user.email?.split('@')[0],
@@ -33,23 +69,11 @@ export const createPost = async (post: any) => {
   });
 };
 
-// 2. FOLLOW / SUBSCRIBE SYSTEM
 export const followUser = async (targetUserId: string) => {
   const uid = auth.currentUser?.uid!;
-  if (!uid) throw new Error("Login করো");
   await setDoc(doc(db, `follows/${uid}_${targetUserId}`), {
-    followerId: uid,
-    followingId: targetUserId,
-    timestamp: serverTimestamp()
+    followerId: uid, followingId: targetUserId, timestamp: serverTimestamp()
   });
-  // Followers Count Update
-  const targetRef = doc(db, "users", targetUserId);
-  const snap = await getDoc(targetRef);
-  if (snap.exists()) {
-    await updateDoc(targetRef, { followersCount: arrayUnion(uid) });
-  } else {
-    await setDoc(targetRef, { followersCount: [uid] }, { merge: true });
-  }
 };
 
 export const unfollowUser = async (targetUserId: string) => {
@@ -59,13 +83,9 @@ export const unfollowUser = async (targetUserId: string) => {
   }).catch(() => {});
 };
 
-// 3. FRIEND REQUEST SYSTEM
 export const sendFriendRequest = async (targetUserId: string) => {
   await addDoc(collection(db, "friendRequests"), {
-    senderId: auth.currentUser?.uid,
-    receiverId: targetUserId,
-    status: "pending",
-    timestamp: serverTimestamp()
+    senderId: auth.currentUser?.uid, receiverId: targetUserId, status: "pending", timestamp: serverTimestamp()
   });
 };
 
@@ -73,7 +93,6 @@ export const acceptFriendRequest = async (requestId: string) => {
   await updateDoc(doc(db, `friendRequests/${requestId}`), { status: "accepted" });
 };
 
-// 4. LIKE / COMMENT / SHARE (Facebook Style)
 export const likePost = async (postId: string) => {
   const uid = auth.currentUser?.uid!;
   await updateDoc(doc(db, `posts/${postId}`), { likes: arrayUnion(uid) });
@@ -92,9 +111,6 @@ export const commentOnPost = async (postId: string, text: string) => {
     text,
     timestamp: serverTimestamp()
   });
-  await updateDoc(doc(db, `posts/${postId}`), {
-    commentsCount: arrayUnion(auth.currentUser?.uid)
-  }).catch(() => {});
 };
 
 export const sharePost = async (postId: string) => {
@@ -102,7 +118,6 @@ export const sharePost = async (postId: string) => {
   await updateDoc(doc(db, `posts/${postId}`), { shares: arrayUnion(uid) });
 };
 
-// 5. STORY (24h - Facebook/Instagram Style)
 export const addStory = async (mediaUrl: string) => {
   await addDoc(collection(db, "stories"), {
     userId: auth.currentUser?.uid,
@@ -121,7 +136,6 @@ export const getStories = (callback: (stories: any[]) => void) => {
   });
 };
 
-// 6. SHORTS / WATCH (TikTok Style)
 export const addShort = async (videoUrl: string, caption: string) => {
   await addDoc(collection(db, "shorts"), {
     userId: auth.currentUser?.uid,
