@@ -85,5 +85,3 @@ export const addShort = async (videoUrl: string, caption: string) => {
     userId: auth.currentUser?.uid, videoUrl, caption, likes: [], views: 0, timestamp: serverTimestamp()
   });
 };
-
-// পুরানো LocalStorage Keys আর লাগবে না - এখন সব Firebase!
