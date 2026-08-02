@@ -1,12 +1,12 @@
 import { db, auth } from '../lib/firebase';
 import {
-  collection, doc, setDoc, getDoc, updateDoc,
-  arrayUnion, arrayRemove, addDoc, serverTimestamp,
+  collection, doc, setDoc, addDoc, updateDoc,
+  arrayUnion, arrayRemove, serverTimestamp,
   query, onSnapshot, orderBy
 } from "firebase/firestore";
 import { SocialItem, UserProfile } from '../types';
 
-// === 100% COMPATIBILITY FIX - সব Build Error Fix ===
+// === 100% COMPATIBILITY FIX ===
 export const STORAGE_KEYS = {
   PROFILE: 'onefeed_profile',
   ITEMS: 'onefeed_items_v2',
@@ -26,6 +26,12 @@ export const DEFAULT_PROFILE: UserProfile = {
   following: 0
 };
 
+export const DEFAULT_SETTINGS = {
+  theme: 'light',
+  language: 'bn',
+  notifications: true
+};
+
 const safeGet = (key: string, fallback: any) => {
   try {
     const d = localStorage.getItem(key);
@@ -41,8 +47,7 @@ export const saveItems = (items: any) => safeSet(STORAGE_KEYS.ITEMS, items);
 export const getStoredTheme = () => localStorage.getItem(STORAGE_KEYS.THEME) || 'light';
 export const saveTheme = (t: string) => localStorage.setItem(STORAGE_KEYS.THEME, t);
 
-// === App.tsx এর জন্য যা যা লাগবে সব ===
-export const getStoredSettings = () => safeGet(STORAGE_KEYS.SETTINGS, { theme: 'light' });
+export const getStoredSettings = () => safeGet(STORAGE_KEYS.SETTINGS, DEFAULT_SETTINGS);
 export const saveStoredSettings = (s: any) => safeSet(STORAGE_KEYS.SETTINGS, s);
 
 export const getStoredCurrentUser = () => safeGet(STORAGE_KEYS.CURRENT_USER, null);
@@ -52,8 +57,14 @@ export const logoutCurrentUser = () => localStorage.removeItem(STORAGE_KEYS.CURR
 export const getStoredUsers = () => safeGet(STORAGE_KEYS.USERS, []);
 export const saveStoredUsers = (u: any) => safeSet(STORAGE_KEYS.USERS, u);
 
-// === REAL FIREBASE - ONEFEED BD ===
+// এইটাই Error দিচ্ছিল
+export const clearAllStorage = () => {
+  try {
+    localStorage.clear();
+  } catch {}
+};
 
+// === REAL FIREBASE ===
 export const getPosts = (callback: (posts: SocialItem[]) => void) => {
   const q = query(collection(db, "posts"), orderBy("timestamp", "desc"));
   return onSnapshot(q, (snapshot) => {
