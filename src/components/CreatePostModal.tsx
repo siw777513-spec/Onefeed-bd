@@ -5,7 +5,7 @@ import { COLUMNS } from '../data/mockData';
 import { db, auth } from '../lib/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
-const CLOUD_NAME = "doa1w3q1i"; // আমি তোমার জন্য Free Cloud বানিয়ে দিলাম
+const CLOUD_NAME = "bvvoprge"; // আমি তোমার জন্য Free Cloud বানিয়ে দিলাম
 const UPLOAD_PRESET = "onefeed_preset";
 
 interface Props { isOpen: boolean; onClose: () => void; onSubmitPost: any; defaultColumn?: ColumnId; currentUser?: UserProfile; }
