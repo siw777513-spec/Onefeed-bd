@@ -37,7 +37,10 @@ export const CreatePostModal: React.FC<Props> = ({ isOpen, onClose, defaultColum
       form.append('file', file);
       form.append('upload_preset', UPLOAD_PRESET);
       try {
-        const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/auto/upload`, { method: 'POST', body: form });
+        const uploadUrl = mediaType === 'video'
+         ? `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/video/upload`
+          : `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`;
+        const res = await fetch(uploadUrl, { method: 'POST', body: form });
         const data = await res.json();
         if(!data.secure_url) throw new Error(data.error?.message || 'Upload failed');
         finalUrl = data.secure_url;
@@ -51,18 +54,25 @@ export const CreatePostModal: React.FC<Props> = ({ isOpen, onClose, defaultColum
       finalUrl = "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=800&q=80";
     }
 
-    await addDoc(collection(db, "posts"), {
-      text: text.trim() || 'Video post',
-      image: finalUrl,
-      videoUrl: finalVideoUrl,
-      mediaType: finalVideoUrl? 'video' : 'image',
-      column,
-      userId: auth.currentUser?.uid,
-      userName: currentUser?.name || auth.currentUser?.displayName || 'User',
-      userAvatar: currentUser?.avatar,
-      likes: [],
-      timestamp: serverTimestamp()
-    });
+    try {
+      await addDoc(collection(db, "posts"), {
+        text: text.trim() || 'Video post',
+        image: finalUrl,
+        videoUrl: finalVideoUrl,
+        mediaType: finalVideoUrl? 'video' : 'image',
+        column,
+        userId: auth.currentUser?.uid,
+        userName: currentUser?.name || auth.currentUser?.displayName || 'User',
+        userAvatar: currentUser?.avatar,
+        likes: [],
+        timestamp: serverTimestamp()
+      });
+    } catch(err:any){
+      alert('Firebase Error: ' + err.message);
+      setLoading(false);
+      return;
+    }
+
     setLoading(false); setText(''); setFile(null); setPreview(null); onClose();
   };
 
