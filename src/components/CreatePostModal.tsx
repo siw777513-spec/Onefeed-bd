@@ -36,7 +36,6 @@ export const CreatePostModal: React.FC<Props> = ({ isOpen, onClose, defaultColum
       const form = new FormData();
       form.append('file', file);
       form.append('upload_preset', UPLOAD_PRESET);
-      form.append('folder', 'onefeed');
       try {
         const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/auto/upload`, { method: 'POST', body: form });
         const data = await res.json();
