@@ -57,7 +57,7 @@ export const PostDetailModal: React.FC<PostDetailModalProps> = ({
 
   if (!item) return null;
 
-  const canDelete = isOwner || (currentUserHandle && item.author.handle === currentUserHandle) || true; // true for testing, later remove
+  const canDelete = isOwner || (currentUserHandle && item.author.handle === currentUserHandle); // true for testing, later remove
 
   const handleCommentSubmit = (e: React.FormEvent) => {
     e.preventDefault();
