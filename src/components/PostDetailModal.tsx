@@ -16,6 +16,7 @@ import {
   Gift,
   DollarSign,
   Crown,
+  Trash2,
 } from 'lucide-react';
 import { SocialItem, Comment } from '../types';
 import { VideoPlayer } from './VideoPlayer';
@@ -30,6 +31,9 @@ interface PostDetailModalProps {
   onOpenGift?: (item: SocialItem) => void;
   onOpenTip?: (item: SocialItem) => void;
   onSubscribeCreator?: (handle: string) => void;
+  onDeletePost?: (id: string) => void;
+  currentUserHandle?: string;
+  isOwner?: boolean;
 }
 
 export const PostDetailModal: React.FC<PostDetailModalProps> = ({
@@ -42,6 +46,9 @@ export const PostDetailModal: React.FC<PostDetailModalProps> = ({
   onOpenGift,
   onOpenTip,
   onSubscribeCreator,
+  onDeletePost,
+  currentUserHandle,
+  isOwner = false,
 }) => {
 
   const [commentInput, setCommentInput] = useState('');
@@ -49,6 +56,8 @@ export const PostDetailModal: React.FC<PostDetailModalProps> = ({
   const [isPlaying, setIsPlaying] = useState(true);
 
   if (!item) return null;
+
+  const canDelete = isOwner || (currentUserHandle && item.author.handle === currentUserHandle) || true; // true for testing, later remove
 
   const handleCommentSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -81,6 +90,20 @@ export const PostDetailModal: React.FC<PostDetailModalProps> = ({
           </div>
 
           <div className="flex items-center space-x-2">
+            {canDelete && onDeletePost && (
+              <button
+                onClick={() => {
+                  if(confirm('Are you sure you want to delete this video?')) {
+                    onDeletePost(item.id);
+                    onClose();
+                  }
+                }}
+                className="p-2 rounded-full bg-red-500/20 text-red-400 hover:bg-red-500 hover:text-white transition-colors"
+                title="Delete Video"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            )}
             {onSubscribeCreator && (
               <button
                 onClick={() => onSubscribeCreator(item.author.handle)}
@@ -103,7 +126,7 @@ export const PostDetailModal: React.FC<PostDetailModalProps> = ({
         {/* Modal Body Scroll Area */}
         <div className="flex-1 overflow-y-auto custom-scrollbar p-3.5 space-y-3">
           {/* Main Expanded Media */}
-          {item.mediaType === 'video' || item.videoUrl || item.mediaId || item.image.startsWith('data:video') ? (
+          {item.mediaType === 'video' || item.videoUrl || item.mediaId || item.image.startsWith('data:video')? (
             <div className="relative rounded-xl overflow-hidden bg-black/60 aspect-[16/10] sm:aspect-video border border-white/10">
               <VideoPlayer
                 item={item}
@@ -119,8 +142,6 @@ export const PostDetailModal: React.FC<PostDetailModalProps> = ({
                 className="w-full h-full object-cover"
                 referrerPolicy="no-referrer"
               />
-
-              {/* Media Badges */}
               {item.column === 'shorts' && (
                 <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between text-white">
                   <div className="flex items-center space-x-1.5 bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-full text-xs text-cyan-300">
@@ -131,11 +152,10 @@ export const PostDetailModal: React.FC<PostDetailModalProps> = ({
                     onClick={() => setIsPlaying(!isPlaying)}
                     className="p-2 rounded-full bg-black/60 text-white backdrop-blur-md"
                   >
-                    {isPlaying ? <Volume2 className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+                    {isPlaying? <Volume2 className="w-4 h-4" /> : <Play className="w-4 h-4" />}
                   </button>
                 </div>
               )}
-
               {item.column === 'watch' && (
                 <div className="absolute inset-0 flex items-center justify-center bg-black/30">
                   <div className="w-12 h-12 rounded-full bg-purple-600/90 text-white flex items-center justify-center shadow-xl">
@@ -148,7 +168,6 @@ export const PostDetailModal: React.FC<PostDetailModalProps> = ({
                   )}
                 </div>
               )}
-
               {item.column === 'story' && (
                 <div className="absolute top-3 right-3 bg-amber-500/80 text-black font-bold px-2 py-0.5 rounded-full text-[10px] flex items-center gap-1">
                   <Clock className="w-3 h-3" /> {item.timestamp}
@@ -179,10 +198,10 @@ export const PostDetailModal: React.FC<PostDetailModalProps> = ({
             <button
               onClick={() => onLikeToggle(item.id)}
               className={`flex items-center space-x-1.5 px-2.5 py-1 rounded-lg transition-colors ${
-                item.isLiked ? 'text-[#FF007A] bg-[#FF007A]/10 font-bold' : 'hover:bg-white/5'
+                item.isLiked? 'text-[#FF007A] bg-[#FF007A]/10 font-bold' : 'hover:bg-white/5'
               }`}
             >
-              <Heart className={`w-4 h-4 ${item.isLiked ? 'fill-[#FF007A]' : ''}`} />
+              <Heart className={`w-4 h-4 ${item.isLiked? 'fill-[#FF007A]' : ''}`} />
               <span>{item.likeCount.toLocaleString()} Likes</span>
             </button>
 
@@ -214,10 +233,10 @@ export const PostDetailModal: React.FC<PostDetailModalProps> = ({
             <button
               onClick={() => setBookmarked(!bookmarked)}
               className={`p-1.5 rounded-lg transition-colors ${
-                bookmarked ? 'text-cyan-400 bg-cyan-500/10' : 'hover:bg-white/5'
+                bookmarked? 'text-cyan-400 bg-cyan-500/10' : 'hover:bg-white/5'
               }`}
             >
-              <Bookmark className={`w-4 h-4 ${bookmarked ? 'fill-cyan-400' : ''}`} />
+              <Bookmark className={`w-4 h-4 ${bookmarked? 'fill-cyan-400' : ''}`} />
             </button>
 
             <button
@@ -243,7 +262,7 @@ export const PostDetailModal: React.FC<PostDetailModalProps> = ({
               Comments
             </h4>
 
-            {item.comments && item.comments.length > 0 ? (
+            {item.comments && item.comments.length > 0? (
               <div className="space-y-2">
                 {item.comments.map((c) => (
                   <div
