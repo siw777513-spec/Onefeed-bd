@@ -23,7 +23,7 @@ import { GiftModal } from './components/GiftModal';
 import { LeftSidebar } from './components/LeftSidebar';
 import { RightSidebar } from './components/RightSidebar';
 import { db } from './lib/firebase';
-import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
+import { collection, onSnapshot, query, orderBy, doc, deleteDoc, updateDoc, increment } from 'firebase/firestore';
 
 export default function App() {
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(() => getStoredCurrentUser());
@@ -53,7 +53,7 @@ export default function App() {
   const activeUser = currentUser || profile;
   const isOwner = (activeUser?.email || '').toLowerCase().trim() === 'siw777513@gmail.com';
 
-  // 🔥 LIVE FIREBASE
+  // LIVE FIREBASE
   useEffect(() => {
     const q = query(collection(db, "posts"), orderBy("timestamp", "desc"));
     const unsub = onSnapshot(q, (snap) => {
@@ -72,8 +72,9 @@ export default function App() {
           isLiked: false,
           timestamp: 'Just now',
           author: { name: data.userName || 'User', handle: data.userHandle || '@user', avatar: data.userAvatar || `https://i.pravatar.cc/150?u=${data.userId}`, verified: false, online: true, isFollowing: false },
-          tags: ['#onefeed'], comments: [], messages: []
-        } as unknown as SocialItem;
+          tags: ['#onefeed'], comments: [], messages: [],
+          userId: data.userId
+        } as any;
       });
       if (fbPosts.length > 0) {
         setItems(prev => {
@@ -88,7 +89,32 @@ export default function App() {
   const handleOpenProfile = (u?: UserProfile) => { setSelectedProfileUser(u || activeUser); setIsProfileOpen(true); };
   const handleLoginSuccess = (user: UserProfile) => { setCurrentUser(user); setProfile(user); saveStoredCurrentUser(user); saveStoredProfile(user); };
   const handleLogout = () => { logoutCurrentUser(); setCurrentUser(null); };
-  const handleLikeToggle = (id: string) => { setItems(p => p.map(i => i.id === id ? { ...i, isLiked: !i.isLiked, likeCount: !i.isLiked ? i.likeCount + 1 : Math.max(0, i.likeCount - 1) } : i)); };
+  
+  const handleDeletePost = async (id: string) => {
+    try {
+      await deleteDoc(doc(db, "posts", id));
+      console.log("Deleted from Firebase:", id);
+    } catch (e) {
+      console.error("Firebase delete failed", e);
+    }
+    setItems((prev) => prev.filter((item) => item.id !== id));
+    if (selectedPost && selectedPost.id === id) setSelectedPost(null);
+  };
+
+  const handleLikeToggle = async (id: string) => {
+    setItems(p => p.map(i => i.id === id ? { ...i, isLiked: !i.isLiked, likeCount: !i.isLiked ? i.likeCount + 1 : Math.max(0, i.likeCount - 1) } : i));
+    try {
+      const postRef = doc(db, "posts", id);
+      await updateDoc(postRef, { likeCount: increment(1) });
+    } catch(e) {}
+  };
+  
+  const handleAddComment = (itemId: string, commentText: string) => {};
+  const handleShareOpen = (item: SocialItem) => setSelectedSharePost(item);
+  const handleOpenReport = (item: SocialItem) => setSelectedReportPost(item);
+  const handleOpenGift = (item: SocialItem) => setSelectedGiftPost(item);
+  const handleOpenTip = (item: SocialItem) => setSelectedGiftPost(item);
+  const handleSubscribeCreator = (handle: string) => {};
   const handleFollowToggle = (h: string) => { setItems(p => p.map(i => i.author.handle === h ? { ...i, author: { ...i.author, isFollowing: !i.author.isFollowing } } : i)); };
   
   if (!currentUser) return <LoginModal onLoginSuccess={handleLoginSuccess} />;
@@ -104,7 +130,7 @@ export default function App() {
         </div>
         <BottomNav activeColumn={activeColumn} onSelectColumn={setActiveColumn} unreadChats={0} />
         <CreatePostModal isOpen={isCreateOpen} onClose={()=>setIsCreateOpen(false)} onSubmitPost={(n)=>setItems(p=>[n,...p])} defaultColumn={createDefaultColumn} currentUser={activeUser} />
-        <PostDetailModal item={selectedPost} onClose={()=>setSelectedPost(null)} onLikeToggle={handleLikeToggle} onAddComment={()=>{}} onShareOpen={setSelectedSharePost} onOpenReport={setSelectedReportPost} />
+        <PostDetailModal item={selectedPost} onClose={()=>setSelectedPost(null)} onLikeToggle={handleLikeToggle} onAddComment={handleAddComment} onShareOpen={handleShareOpen} onOpenReport={handleOpenReport} onOpenGift={handleOpenGift} onOpenTip={handleOpenTip} onSubscribeCreator={handleSubscribeCreator} onDeletePost={handleDeletePost} currentUserHandle={activeUser.handle} isOwner={true} />
         <NotificationModal isOpen={isNotifOpen} onClose={()=>setIsNotifOpen(false)} />
         <SearchModal isOpen={isSearchOpen} onClose={()=>setIsSearchOpen(false)} items={items} onSelectPost={setSelectedPost} />
         <SettingsModal isOpen={isSettingsOpen} onClose={()=>setIsSettingsOpen(false)} profile={profile} currentUser={activeUser} settings={settings} initialTab={settingsDefaultTab} onSaveProfile={(u)=>{setProfile(u); setCurrentUser(u); saveStoredCurrentUser(u);}} onSaveSettings={setSettings} onResetData={()=>{}} onLogout={handleLogout} onDeleteAccount={()=>{}} />
@@ -118,4 +144,4 @@ export default function App() {
       </div>
     </PhoneContainer>
   );
-    }
+         }
