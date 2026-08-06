@@ -1,3 +1,4 @@
+// v12 - Friends Hub Live Fix
 import React, { useState, useEffect } from 'react';
 import { ColumnId, GiftOption, SocialItem, Transaction, UserProfile, UserSettings } from './types';
 import { getStoredItems, saveStoredItems, getStoredProfile, saveStoredProfile, getStoredSettings, saveStoredSettings, getStoredCurrentUser, saveStoredCurrentUser, logoutCurrentUser, clearAllStorage, DEFAULT_PROFILE, DEFAULT_SETTINGS } from './utils/storage';
