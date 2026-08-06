@@ -87,15 +87,19 @@ export default function App(){
           {isNotifOpen && <EB><NotificationModal isOpen={isNotifOpen} onClose={()=>setIsNotifOpen(false)} /></EB>}
           {isSearchOpen && <EB><SearchModal isOpen={isSearchOpen} onClose={()=>setIsSearchOpen(false)} items={items} onSelectPost={setSelectedPost} /></EB>}
           {isSettingsOpen && <EB><SettingsModal isOpen={isSettingsOpen} onClose={()=>setIsSettingsOpen(false)} profile={activeUser} currentUser={activeUser} settings={{} as any} initialTab={'profile'} onSaveProfile={()=>{}} onSaveSettings={()=>{}} onResetData={()=>{}} onLogout={()=>{localStorage.clear(); location.reload();}} onDeleteAccount={()=>{}} /></EB>}
-          {isProfileOpen && <EB><ProfileModal isOpen={isProfileOpen} onClose={()=>setIsProfileOpen(false)} targetUser={activeUser} currentUser={activeUser} items={items} onLikeToggle={()=>{}} onOpenDetail={setSelectedPost} onOpenSettings={()=>{}} onOpenFriends={()=>setIsFriendsOpen(true)} onFollowUser={()=>{}} /></EB>}
+          {isProfileOpen && <EB><ProfileModal isOpen={isProfileOpen} onClose={()=>setIsProfileOpen(false)} targetUser={activeUser} currentUser={activeUser} items={items} onLikeToggle={()=>{}} onOpenDetail={setSelectedPost} onOpenSettings={()=>setIsSettingsOpen(true)} onOpenFriends={()=>setIsFriendsOpen(true)} onFollowUser={()=>{}} /></EB>}
           {isFriendsOpen && <EB><FriendsModal isOpen={isFriendsOpen} onClose={()=>setIsFriendsOpen(false)} currentUser={activeUser} initialTab={'friends'} onOpenProfileWithUser={()=>{}} onOpenChatWithUser={()=>{}} /></EB>}
           {selectedSharePost && <EB><ShareModal item={selectedSharePost} onClose={()=>setSelectedSharePost(null)} lang={'en' as any} /></EB>}
           {selectedReportPost && <EB><ReportModal item={selectedReportPost} onClose={()=>setSelectedReportPost(null)} onConfirmReport={()=>{}} /></EB>}
           {isWalletOpen && <EB><WalletModal isOpen={isWalletOpen} onClose={()=>setIsWalletOpen(false)} coinBalance={500} transactions={[]} onBuyCoins={()=>{}} /></EB>}
           {selectedGiftPost && <EB><GiftModal isOpen={!!selectedGiftPost} onClose={()=>setSelectedGiftPost(null)} item={selectedGiftPost} userCoins={500} onSendGift={()=>{}} onOpenBuyCoins={()=>{}} /></EB>}
         </React.Suspense>
-        <div style={{position:'fixed',bottom:5,left:5,background:'#00ff00',color:'black',padding:'2px 6px',fontSize:10,zIndex:99999}}>V24 FINAL ALL</div>
+
+        {/* FLOATING SETTINGS BUTTON - V27 FIX */}
+        <button onClick={()=>setIsSettingsOpen(true)} style={{position:'fixed',top:70,right:12,background:'linear-gradient(90deg,#1877F2,#FF0000)',color:'white',padding:'10px 14px',borderRadius:999,zIndex:99999,fontSize:12,fontWeight:'900',boxShadow:'0 8px 24px rgba(0,0,0,0.5)'}}>⚙️ SETTINGS FB/TT/YT</button>
+
+        <div style={{position:'fixed',bottom:5,left:5,background:'#00ff00',color:'black',padding:'2px 6px',fontSize:10,zIndex:99999}}>V27 SETTINGS FB+TT+YT+STUDIO</div>
       </div>
     </PhoneContainer>
   );
-}
+  }
