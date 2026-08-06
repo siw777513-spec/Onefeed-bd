@@ -1,124 +1,99 @@
 import React, { useState } from 'react';
-import { X, User, Shield, Bell, Video, DollarSign, Settings, Lock } from 'lucide-react';
+import { X, User, Video, Youtube, Shield, DollarSign, Settings, Bell, Lock, Eye, Users, UserX, MessageCircle, BarChart3, Wallet } from 'lucide-react';
 
 export const SettingsModal = ({isOpen, onClose, profile, currentUser, onLogout}: any) => {
   if(!isOpen) return null;
-  const [tab, setTab] = useState('facebook');
+  const [main, setMain] = useState<'facebook'|'tiktok'|'youtube'|'studio'>('facebook');
+  const [sub, setSub] = useState('profile');
   const user = currentUser || profile;
 
-  const TABS = [
-    {id:'facebook', label:'Facebook Style', icon: User},
-    {id:'tiktok', label:'TikTok Style', icon: Video},
-    {id:'youtube', label:'YouTube Style', icon: Bell},
-    {id:'security', label:'Security', icon: Lock},
-    {id:'monetization', label:'Earning', icon: DollarSign},
-    {id:'advanced', label:'Advanced', icon: Settings},
-  ];
-
   return (
-    <div className="fixed inset-0 z-[9999] bg-black/90 flex items-center justify-center p-3">
-      <div className="bg-[#12121E] w-full max-w-5xl h-[90vh] rounded-3xl border border-white/10 flex overflow-hidden text-white">
-        {/* Left */}
-        <div className="w-[200px] bg-[#0A0A0F] p-3 border-r border-white/10 overflow-y-auto">
-          <div className="flex items-center gap-2 mb-6 p-2">
-            <img src={user?.avatar} className="w-10 h-10 rounded-full bg-white/10" alt="" />
-            <div><p className="text-sm font-bold truncate">{user?.name}</p><p className="text-[10px] text-white/50">{user?.handle}</p></div>
-          </div>
-          {TABS.map(t=>(
-            <button key={t.id} onClick={()=>setTab(t.id)} className={`w-full text-left p-3 rounded-xl mb-1 flex items-center gap-2 text-sm ${tab===t.id?'bg-white text-black font-bold':'text-white/60 hover:bg-white/10'}`}>
-              <t.icon className="w-4 h-4"/>{t.label}
-            </button>
-          ))}
-          <button onClick={onLogout} className="w-full mt-8 bg-red-500/20 text-red-400 p-3 rounded-xl text-sm">Log Out</button>
+    <div className="fixed inset-0 z-[9999] bg-black/90 flex items-center justify-center p-2">
+      <div className="bg-[#0F0F14] w-full max-w-[1100px] h-[92vh] rounded-3xl border border-white/10 flex overflow-hidden text-white">
+
+        {/* MAIN SIDEBAR - FB / TT / YT / STUDIO */}
+        <div className="w-[180px] bg-black p-3 flex flex-col gap-2 border-r border-white/10">
+          <div className="flex items-center gap-2 p-2 mb-4"><img src={user?.avatar} className="w-8 h-8 rounded-full bg-white/10"/><div><p className="text-xs font-bold truncate">{user?.name}</p><p className="text-[10px] opacity-50">All Settings</p></div></div>
+          <button onClick={()=>{setMain('facebook'); setSub('profile')}} className={`p-3 rounded-xl text-sm font-bold flex gap-2 ${main==='facebook'?'bg-[#1877F2] text-white':'bg-white/5'}`}><User className="w-4 h-4"/> Facebook</button>
+          <button onClick={()=>{setMain('tiktok'); setSub('account')}} className={`p-3 rounded-xl text-sm font-bold flex gap-2 ${main==='tiktok'?'bg-[#FE2C55] text-white':'bg-white/5'}`}><Video className="w-4 h-4"/> TikTok</button>
+          <button onClick={()=>{setMain('youtube'); setSub('privacy')}} className={`p-3 rounded-xl text-sm font-bold flex gap-2 ${main==='youtube'?'bg-[#FF0000] text-white':'bg-white/5'}`}><Youtube className="w-4 h-4"/> YouTube</button>
+          <button onClick={()=>{setMain('studio'); setSub('dashboard')}} className={`p-3 rounded-xl text-sm font-bold flex gap-2 ${main==='studio'?'bg-white text-black':'bg-white/5'}`}><BarChart3 className="w-4 h-4"/> YT Studio</button>
+          <button onClick={()=>{localStorage.clear(); location.reload();}} className="mt-auto bg-red-500/20 text-red-400 p-3 rounded-xl text-xs">Log Out</button>
         </div>
 
-        {/* Right */}
-        <div className="flex-1 p-6 overflow-y-auto">
-          <div className="flex justify-between items-center mb-6"><h2 className="text-xl font-black">{TABS.find(t=>t.id===tab)?.label} Settings</h2><button onClick={onClose} className="bg-white/10 p-2 rounded-full"><X className="w-4 h-4"/></button></div>
+        {/* SUB SIDEBAR */}
+        <div className="w-[200px] bg-[#12121A] p-3 border-r border-white/10 overflow-y-auto">
+          {main==='facebook' && <>
+            <p className="text-[10px] opacity-40 mb-2">FACEBOOK SETTINGS</p>
+            {[
+              ['profile','Profile Settings'],['audience','Audience & Visibility'],['notif','Notifications'],['blocking','Blocking'],['stories','Stories / Reels'],['page','Professional Mode']
+            ].map(([id,label])=> <button key={id} onClick={()=>setSub(id)} className={`w-full text-left p-2.5 rounded-lg text-xs mb-1 ${sub===id?'bg-white/10 text-white':'opacity-60'}`}>{label}</button>)}
+          </>}
+          {main==='tiktok' && <>
+            <p className="text-[10px] opacity-40 mb-2">TIKTOK SETTINGS</p>
+            {[
+              ['account','Account - Manage'],['privacy','Privacy'],['security','Security & Permissions'],['content','Content & Display'],['creator','Creator Tools'],['wallet','Wallet / Balance']
+            ].map(([id,label])=> <button key={id} onClick={()=>setSub(id)} className={`w-full text-left p-2.5 rounded-lg text-xs mb-1 ${sub===id?'bg-white/10 text-white':'opacity-60'}`}>{label}</button>)}
+          </>}
+          {main==='youtube' && <>
+            <p className="text-[10px] opacity-40 mb-2">YOUTUBE SETTINGS</p>
+            {[
+              ['privacy','Video & Privacy'],['history','History & Privacy'],['notif_yt','Notifications'],['personal','Personal Details'],['password','Password & Security'],['ads','Ad Preferences']
+            ].map(([id,label])=> <button key={id} onClick={()=>setSub(id)} className={`w-full text-left p-2.5 rounded-lg text-xs mb-1 ${sub===id?'bg-white/10 text-white':'opacity-60'}`}>{label}</button>)}
+          </>}
+          {main==='studio' && <>
+            <p className="text-[10px] opacity-40 mb-2">YT STUDIO - PRO</p>
+            {[
+              ['dashboard','Dashboard Analytics'],['content_st','Content'],['analytics','Analytics'],['comments','Comments'],['monet','Monetization'],['custom','Customization'],['settings_st','Studio Settings']
+            ].map(([id,label])=> <button key={id} onClick={()=>setSub(id)} className={`w-full text-left p-2.5 rounded-lg text-xs mb-1 ${sub===id?'bg-white/10 text-white':'opacity-60'}`}>{label}</button>)}
+          </>}
+        </div>
 
-          {tab==='facebook' && (
-            <div className="space-y-4">
-              <h3 className="font-bold text-cyan-400">Facebook Privacy (FB)</h3>
-              {[
-                'Who can see your future posts? [Public / Friends / Only Me]',
-                'Who can send you friend requests? [Everyone / Friends of Friends]',
-                'Who can see your friends list? [Public / Friends]',
-                'Profile Locking [Enable - Only Friends can see full profile]',
-                'Timeline Review [Review posts you are tagged in]',
-                'Story Privacy [Public / Friends / Custom]',
-                'Face Recognition [On/Off]',
-                'Blocking - Blocked Users List',
-              ].map(i=><div key={i} className="bg-white/5 p-3 rounded-xl text-sm flex justify-between"><span>{i}</span><span className="text-cyan-400">Edit</span></div>)}
-            </div>
-          )}
+        {/* CONTENT */}
+        <div className="flex-1 bg-[#0A0A0F] p-5 overflow-y-auto">
+          <div className="flex justify-between items-center mb-5"><h2 className="font-black text-lg capitalize">{sub.replace('_',' ')} - {main}</h2><button onClick={onClose} className="bg-white/10 p-2 rounded-full"><X className="w-4 h-4"/></button></div>
 
-          {tab==='tiktok' && (
-            <div className="space-y-4">
-              <h3 className="font-bold text-pink-400">TikTok Privacy & Creator</h3>
-              {[
-                'Private Account [On/Off] - TikTok',
-                'Suggest your account to others [On/Off]',
-                'Who can Duet with your videos? [Everyone / Friends / No one]',
-                'Who can Stitch your videos? [Everyone / Friends / No one]',
-                'Who can download your videos? [On/Off]',
-                'Who can comment? [Everyone / Friends / No one]',
-                'Comment Filters - Filter Keywords, Filter Spam',
-                'Family Pairing / Restricted Mode',
-                'Activity Status [Show when you are active]',
-              ].map(i=><div key={i} className="bg-white/5 p-3 rounded-xl text-sm flex justify-between"><span>{i}</span><input type="checkbox" defaultChecked /></div>)}
-            </div>
-          )}
+          {/* FACEBOOK */}
+          {main==='facebook' && sub==='profile' && <div className="space-y-3"><Item title="কে তোমার প্রোফাইল দেখতে পারবে?" desc="Public / Friends / Only Me"/><Item title="কে Tag করতে পারবে?" desc="Everyone / Friends / No one"/><Item title="Timeline Review" desc="Tag করা Post Approve করতে হবে"/></div>}
+          {main==='facebook' && sub==='audience' && <div className="space-y-3"><Item title="Who can see your posts" desc="Public / Friends / Only Me - FB"/><Item title="Who can send Friend Request" desc="Everyone / Friends of Friends"/><Item title="Who can see Friends List" desc="Public / Friends / Only Me"/><Item title="Profile Locking" desc="Enable - Only Friends can see full profile"/></div>}
+          {main==='facebook' && sub==='notif' && <div className="space-y-3"><Item title="Like Notification" desc="Push / Email / SMS"/><Item title="Comment Notification" desc="Push / Email"/><Item title="Live Notification" desc="On/Off"/><Item title="Friend Request" desc="Push + Email"/></div>}
+          {main==='facebook' && sub==='blocking' && <div className="space-y-3"><Item title="Blocked Users" desc="2 Users Blocked - Unblock"/><Item title="Block New User" desc="Enter @handle to block"/></div>}
+          {main==='facebook' && sub==='stories' && <div className="space-y-3"><Item title="Who can see Story?" desc="Public / Friends / Custom"/><Item title="Who can Reply?" desc="Everyone / Friends"/></div>}
+          {main==='facebook' && sub==='page' && <div className="space-y-3"><Item title="Professional Mode" desc="Turn On - Creator Mode"/><Item title="Monetization" desc="Stars, Ads, Subscription"/><Item title="Payout Settings" desc="Bkash / Nagad / Bank"/><Item title="Insights" desc="Page Insights & Analytics"/></div>}
 
-          {tab==='youtube' && (
-            <div className="space-y-4">
-              <h3 className="font-bold text-red-400">YouTube Content & Playback</h3>
-              {[
-                'Restricted Mode [Hides potentially mature videos] - YT',
-                'Autoplay [Autoplay next video] - YT',
-                'Playback - Always show captions, Double tap to seek',
-                'Upload Defaults - Title, Description, Visibility, Tags, Category',
-                'Privacy - Keep all my subscriptions private',
-                'Privacy - Keep all my liked videos private',
-                'History - Pause Watch History, Clear Watch History',
-                'History - Pause Search History, Clear Search History',
-                'Connected Apps - Manage apps connected to YouTube',
-              ].map(i=><div key={i} className="bg-white/5 p-3 rounded-xl text-sm flex justify-between"><span>{i}</span><span className="text-red-400">Manage</span></div>)}
-            </div>
-          )}
+          {/* TIKTOK */}
+          {main==='tiktok' && sub==='account' && <div className="space-y-3"><Item title="Manage Account" desc="Phone, Email, Password"/><Item title="Switch to Business/Creator Account" desc="Creator / Business"/></div>}
+          {main==='tiktok' && sub==='privacy' && <div className="space-y-3"><Item title="Private Account On/Off" desc="TikTok Private"/><Item title="Who can follow / comment / Duet / Stitch / Download" desc="Everyone / Friends / No one"/><Item title="Blocked Accounts" desc="Manage Blocked"/><Item title="Activity Status On/Off" desc="Show active status"/></div>}
+          {main==='tiktok' && sub==='security' && <div className="space-y-3"><Item title="2-Step Verification" desc="SMS / Authenticator / Email"/><Item title="Device Management" desc="Where you're logged in"/><Item title="App Permissions" desc="Manage permissions"/></div>}
+          {main==='tiktok' && sub==='content' && <div className="space-y-3"><Item title="Content Preferences" desc="Restricted Mode On/Off"/><Item title="Video Language Filter" desc="Filter Languages"/><Item title="Keyword Filter" desc="কোন শব্দ Comment এ আসবে না - Add keywords"/></div>}
+          {main==='tiktok' && sub==='creator' && <div className="space-y-3"><Item title="Creator Fund / Creativity Program Beta" desc="টাকা ইনকাম - Eligible"/><Item title="Analytics" desc="Follower, Video View, Watch Time"/><Item title="Promote" desc="Boost Video with Money"/><Item title="TikTok Studio" desc="All Video Management"/></div>}
+          {main==='tiktok' && sub==='wallet' && <div className="space-y-3"><div className="bg-gradient-to-r from-pink-500 to-red-500 p-4 rounded-xl text-black"><p className="text-xl font-black">500 Coins</p><p>Balance</p></div><Item title="Gift" desc="Received Gifts"/><Item title="Payout" desc="Bkash / Nagad"/></div>}
 
-          {tab==='security' && (
-            <div className="space-y-3">
-              <h3 className="font-bold text-green-400">Facebook + YouTube Security</h3>
-              <div className="bg-white/5 p-4 rounded-xl"><p>Two-Factor Authentication</p><p className="text-xs text-white/50">SMS / Authenticator App / Security Key</p></div>
-              <div className="bg-white/5 p-4 rounded-xl"><p>Where you're logged in</p><p className="text-xs text-white/50">iPhone, Windows PC - Logout from all devices</p></div>
-              <div className="bg-white/5 p-4 rounded-xl"><p>Change Password</p><input className="w-full mt-2 bg-black p-2 rounded-lg text-sm" placeholder="Current Password" /></div>
-            </div>
-          )}
+          {/* YOUTUBE */}
+          {main==='youtube' && sub==='privacy' && <div className="space-y-3"><Item title="Keep all subscriptions private" desc="YT Privacy"/><Item title="Keep all liked videos private" desc="YT Privacy"/></div>}
+          {main==='youtube' && sub==='history' && <div className="space-y-3"><Item title="Watch History" desc="Pause / Clear"/><Item title="Search History" desc="Pause / Clear"/><Item title="Manage all activity" desc="Google My Activity"/></div>}
+          {main==='youtube' && sub==='notif_yt' && <div className="space-y-3"><Item title="Recommended videos" desc="Mobile / Email"/><Item title="Mentions, Comments" desc="All / None"/></div>}
+          {main==='youtube' && sub==='personal' && <div className="space-y-3"><Item title="Personal Details" desc="Name, DOB, Contact - Email/Phone"/><Item title="Google Account" desc="Manage Google Account"/></div>}
+          {main==='youtube' && sub==='password' && <div className="space-y-3"><Item title="Change Password" desc="Google Password"/><Item title="Two-Factor Authentication (2FA)" desc="SMS / Authenticator App / Security Key"/><Item title="Where you're logged in" desc="Device list - Logout"/><Item title="Login Alerts" desc="Notify on new login"/></div>}
+          {main==='youtube' && sub==='ads' && <div className="space-y-3"><Item title="Ad Preferences" desc="What ads you see - Dashboard"/></div>}
 
-          {tab==='monetization' && (
-            <div className="space-y-3">
-              <h3 className="font-bold text-yellow-400">YouTube + TikTok Earning</h3>
-              <div className="bg-gradient-to-r from-yellow-500 to-orange-500 p-4 rounded-xl text-black"><p className="text-2xl font-black">500 Coins</p><p>≈ 250 Taka</p></div>
-              <div className="bg-white/5 p-3 rounded-xl">Creator Fund / Creativity Program - TikTok</div>
-              <div className="bg-white/5 p-3 rounded-xl">YouTube Monetization - Ads, Memberships, Super Thanks</div>
-              <div className="bg-white/5 p-3 rounded-xl">Payout - Bkash / Nagad / Bank - YT Studio Style</div>
-              <div className="bg-white/5 p-3 rounded-xl">Analytics - Views, Watch Time, Audience</div>
-            </div>
-          )}
-
-          {tab==='advanced' && (
-            <div className="space-y-3">
-              <h3 className="font-bold">Advanced - Combined</h3>
-              <div className="bg-white/5 p-3 rounded-xl">Language - English / বাংলা - FB+YT+TT</div>
-              <div className="bg-white/5 p-3 rounded-xl">Dark Mode [Always On for OneFeed]</div>
-              <div className="bg-white/5 p-3 rounded-xl">Data Saver - Reduce data usage - TT+FB</div>
-              <div className="bg-white/5 p-3 rounded-xl">Clear Cache - 2.5 MB</div>
-              <div className="bg-white/5 p-3 rounded-xl">Download your information - FB+YT Data Export</div>
-              <div className="bg-white/5 p-3 rounded-xl">Version: OneFeed V25 FB+TT+YT Pro Max</div>
-            </div>
-          )}
+          {/* STUDIO */}
+          {main==='studio' && sub==='dashboard' && <div className="space-y-3"><div className="bg-white text-black p-4 rounded-xl"><p className="font-black">Channel Analytics</p><p className="text-sm">Views: 1.2M, Watch Time: 5K hrs</p></div></div>}
+          {main==='studio' && sub==='content_st' && <div className="space-y-3"><Item title="All Videos" desc="Visibility: Public / Unlisted / Private / Scheduled"/></div>}
+          {main==='studio' && sub==='analytics' && <div className="space-y-3"><Item title="Views, Watch Time, Audience, Revenue" desc="YT Studio Analytics"/></div>}
+          {main==='studio' && sub==='comments' && <div className="space-y-3"><Item title="All Comments" desc="Filter, Blocked Words"/></div>}
+          {main==='studio' && sub==='monet' && <div className="space-y-3"><Item title="Monetization On/Off" desc="Ads, Memberships, Super Chat"/><Item title="Copyright Claims / Strikes" desc="Check Claims"/></div>}
+          {main==='studio' && sub==='custom' && <div className="space-y-3"><Item title="Layout, Branding" desc="Logo, Banner, Watermark"/><Item title="Basic Info" desc="Channel Info"/></div>}
+          {main==='studio' && sub==='settings_st' && <div className="space-y-3"><Item title="Channel > Basic Info" desc="Audience - Kids or Not"/><Item title="Upload Defaults" desc="Title, Description, Tags, Category - Auto"/><Item title="Permissions" desc="Manager / Editor Add"/><Item title="Community" desc="Default Comment Settings, Auto Block"/></div>}
         </div>
       </div>
     </div>
   )
-}            
+}
+
+const Item = ({title, desc}: any) => (
+  <div className="bg-white/[0.06] border border-white/10 p-3.5 rounded-xl flex justify-between items-center">
+    <div><p className="text-sm font-bold">{title}</p><p className="text-[11px] opacity-50">{desc}</p></div>
+    <span className="text-xs bg-white/10 px-3 py-1 rounded-full">Edit</span>
+  </div>
+)
