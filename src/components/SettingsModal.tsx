@@ -121,4 +121,4 @@ export const SettingsModal = ({isOpen, onClose, profile, currentUser, onLogout}:
       </div>
     </div>
   )
-              }
+              
