@@ -4,12 +4,13 @@ import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBNdp71_i5S8b3RdypvtJQ-IXK9P5vjssU",
-  authDomain: "onefeed-bangladesh.firebaseapp.com",
-  projectId: "onefeed-bangladesh",
-  storageBucket: "onefeed-bangladesh.firebasestorage.app",
-  messagingSenderId: "658176332596",
-  appId: "1:658176332596:web:0101c94065e834c1ff8b61"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
 const app = initializeApp(firebaseConfig);
