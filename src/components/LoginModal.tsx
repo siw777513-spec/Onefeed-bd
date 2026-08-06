@@ -1,113 +1,68 @@
 import React, { useState } from 'react';
-import { Sparkles, Mail, User, ArrowRight, Lock } from 'lucide-react';
+import { Sparkles, Mail, User, Lock, Eye } from 'lucide-react';
 import { UserProfile } from '../types';
-import { auth, googleProvider, db } from '../firebase';
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup } from "firebase/auth";
-import { doc, setDoc, getDoc } from "firebase/firestore";
+import { auth, db } from '../lib/firebase';
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from "firebase/auth";
+import { doc, setDoc } from "firebase/firestore";
 
-interface LoginModalProps {
-  onLoginSuccess: (user: UserProfile) => void;
-}
-
-export const LoginModal: React.FC<LoginModalProps> = ({ onLoginSuccess }) => {
+export const LoginModal = ({onLoginSuccess}: {onLoginSuccess:(u:UserProfile)=>void}) => {
+  const [isSignUp, setIsSignUp] = useState(false);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const createUserProfile = (cleanName: string, cleanEmail: string, photoUrl?: string): UserProfile => {
-    const isOwner = cleanEmail === 'siw777513@gmail.com';
-    return {
-      name: cleanName,
-      handle: `@${cleanName.toLowerCase().replace(/\s+/g, '_')}`,
-      email: cleanEmail,
-      avatar: photoUrl || (isOwner? 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80' : `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(cleanName)}`),
-      coverImage: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80',
-      bio: isOwner? 'Owner & Lead Engineer of OneFeed platform.' : 'OneFeed community member 🚀',
-      followersCount: isOwner? 1240 : 42,
-      followingCount: isOwner? 380 : 18,
-      isAdmin: isOwner,
-      coinBalance: isOwner? 500 : 100,
-      totalEarnings: isOwner? 148.50 : 0,
-      availableBalance: isOwner? 112.00 : 0,
-      subscribersCount: isOwner? 28 : 0,
-      giftsReceivedCount: isOwner? 142 : 0,
-    };
-  };
+  const makeProfile = (n:string,e:string, guest=false): UserProfile => ({
+    name: n, handle: `@${n.toLowerCase().replace(/\s+/g,'_')}`, email: e,
+    avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${n}`,
+    coverImage: '', bio: guest?'Guest Viewer':'OneFeed Member', followersCount:0, followingCount:0,
+    isAdmin: false, coinBalance: guest?0:100, isGuest: guest
+  } as any);
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleAuth = async (e:React.FormEvent)=>{
     e.preventDefault();
-    const cleanEmail = email.toLowerCase().trim();
-    const cleanName = name.trim() || email.split('@')[0];
-    if (!cleanEmail.includes('@') || password.length < 6) {
-      setError('সব তথ্য সঠিকভাবে দাও (Password ৬ অক্ষরের বেশি)');
-      return;
-    }
-    setError(''); setLoading(true);
-    try {
+    if(!email.includes('@') || password.length<6){ setError('Valid Email & Password min 6 chars'); return; }
+    setLoading(true); setError('');
+    try{
       let cred;
-      try {
-        cred = await signInWithEmailAndPassword(auth, cleanEmail, password);
-      } catch {
-        cred = await createUserWithEmailAndPassword(auth, cleanEmail, password);
-      }
-      // Save to Firestore for Follow/Friend system
-      const userProfile = createUserProfile(cleanName, cleanEmail, cred.user.photoURL || undefined);
-      await setDoc(doc(db, "users", cred.user.uid), {...userProfile, uid: cred.user.uid, createdAt: new Date() }, { merge: true });
-      localStorage.setItem('onefeed_currentUser', JSON.stringify(userProfile));
-      onLoginSuccess(userProfile);
-    } catch (err: any) {
-      setError(err.message);
-    }
+      if(isSignUp) cred = await createUserWithEmailAndPassword(auth, email, password);
+      else cred = await signInWithEmailAndPassword(auth, email, password);
+      const profile = makeProfile(name||email.split('@')[0], email, false);
+      try{ await setDoc(doc(db,"users",cred.user.uid), {...profile, uid:cred.user.uid}, {merge:true}); }catch{}
+      localStorage.setItem('onefeed_currentUser', JSON.stringify(profile));
+      onLoginSuccess(profile);
+    }catch(err:any){ setError(err.message); }
     setLoading(false);
   };
 
-  const handleGoogleLogin = async () => {
-    setError(''); setLoading(true);
-    try {
-      const result = await signInWithPopup(auth, googleProvider);
-      const gUser = result.user;
-      const cleanName = gUser.displayName || "User";
-      const cleanEmail = gUser.email || "";
-
-      // Check if user exists in Firestore
-      const userRef = doc(db, "users", gUser.uid);
-      const snap = await getDoc(userRef);
-      let userProfile: UserProfile;
-      if(snap.exists()){
-        userProfile = snap.data() as UserProfile;
-      } else {
-        userProfile = createUserProfile(cleanName, cleanEmail, gUser.photoURL || undefined);
-        await setDoc(userRef, {...userProfile, uid: gUser.uid, createdAt: new Date() });
-      }
-      localStorage.setItem('onefeed_currentUser', JSON.stringify(userProfile));
-      onLoginSuccess(userProfile);
-    } catch (err: any) {
-      setError(err.message);
-    }
-    setLoading(false);
+  const handleGuest = ()=>{
+    const guestProfile = makeProfile('Guest Viewer','guest@onefeed.com', true);
+    localStorage.setItem('onefeed_currentUser', JSON.stringify(guestProfile));
+    localStorage.setItem('onefeed_isGuest','true');
+    onLoginSuccess(guestProfile);
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0A0A10]/95 backdrop-blur-xl">
-      <div className="relative w-full max-w-md bg-[#12121E] border border-white/10 rounded-3xl p-8 shadow-2xl text-slate-100 flex flex-col items-center">
-        <div className="flex items-center space-x-2.5 mb-6">
-          <div className="relative flex items-center justify-center w-11 h-11 rounded-2xl bg-gradient-to-tr from-cyan-400 via-purple-600 to-pink-500 p-[2px]">
-            <div className="w-full h-full bg-[#0A0A10] rounded-[14px] flex items-center justify-center"><Sparkles className="w-6 h-6 text-cyan-400" /></div>
-          </div>
-          <div><h1 className="text-2xl font-black tracking-tight text-white">OneFeed</h1><p className="text-[11px] text-slate-400">Welcome Back - LIVE</p></div>
-        </div>
-        <form onSubmit={handleLogin} className="w-full space-y-4">
-          <div><label className="block text-xs font-bold text-slate-300 mb-1.5">Full Name (New User)</label><div className="relative"><User className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" /><input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Your full name" className="w-full bg-[#0A0A10] border border-white/15 rounded-xl pl-9 pr-3 py-3 text-sm text-white" /></div></div>
-          <div><label className="block text-xs font-bold text-slate-300 mb-1.5">Email</label><div className="relative"><Mail className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" /><input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" className="w-full bg-[#0A0A10] border border-white/15 rounded-xl pl-9 pr-3 py-3 text-sm text-white" required /></div></div>
-          <div><label className="block text-xs font-bold text-slate-300 mb-1.5">Password</label><div className="relative"><Lock className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" /><input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" className="w-full bg-[#0A0A10] border border-white/15 rounded-xl pl-9 pr-3 py-3 text-sm text-white" required /></div></div>
-          {error && <p className="text-xs text-red-400 font-semibold bg-red-500/10 border border-red-500/20 p-2.5 rounded-xl text-center">{error}</p>}
-          <button type="submit" disabled={loading} className="w-full py-3.5 rounded-xl bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 text-black font-extrabold text-sm uppercase tracking-wider flex items-center justify-center space-x-2">{loading? <span>Signing in...</span> : <><span>Login to OneFeed</span><ArrowRight className="w-4 h-4" /></>}</button>
-          <div className="relative my-2"><div className="absolute inset-0 flex items-center"><div className="w-full border-t border-white/10"></div></div><div className="relative flex justify-center text-[11px]"><span className="bg-[#12121E] px-2 text-slate-400">OR</span></div></div>
-          <button type="button" onClick={handleGoogleLogin} disabled={loading} className="w-full py-3 rounded-xl bg-white text-black font-bold text-sm flex items-center justify-center gap-2"><img src="https://www.svgrepo.com/show/475656/google-color.svg" className="w-5 h-5" /> Google দিয়ে Login করো</button>
+    <div className="fixed inset-0 z-[9999] bg-[#0A0A0F] flex items-center justify-center p-4">
+      <div className="w-full max-w-[380px] bg-[#12121E] border border-white/10 rounded-3xl p-7">
+        <div className="flex items-center gap-2 mb-6"><div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-400 to-purple-600 flex items-center justify-center"><Sparkles className="w-5 h-5 text-black"/></div><div><h1 className="text-xl font-black text-white">OneFeed</h1><p className="text-[11px] text-white/40">First Time? Sign Up or Continue as Guest</p></div></div>
+
+        <form onSubmit={handleAuth} className="space-y-3">
+          {isSignUp && <div className="relative"><User className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-white/40"/><input value={name} onChange={e=>setName(e.target.value)} placeholder="Full Name" className="w-full bg-black/50 border border-white/10 rounded-xl pl-10 pr-3 py-3 text-sm text-white" required={isSignUp}/></div>}
+          <div className="relative"><Mail className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-white/40"/><input value={email} onChange={e=>setEmail(e.target.value)} placeholder="Email" type="email" className="w-full bg-black/50 border border-white/10 rounded-xl pl-10 pr-3 py-3 text-sm text-white" required/></div>
+          <div className="relative"><Lock className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-white/40"/><input value={password} onChange={e=>setPassword(e.target.value)} placeholder="Password (6+ chars)" type="password" className="w-full bg-black/50 border border-white/10 rounded-xl pl-10 pr-3 py-3 text-sm text-white" required/></div>
+          {error && <p className="text-xs text-red-400 bg-red-500/10 p-2 rounded-xl">{error}</p>}
+          <button type="submit" disabled={loading} className="w-full bg-white text-black py-3 rounded-xl font-bold text-sm">{loading? 'Loading...' : (isSignUp?'Sign Up & Login':'Login')}</button>
         </form>
+
+        <button onClick={()=>setIsSignUp(!isSignUp)} className="w-full text-xs text-white/50 mt-3 hover:text-white">{isSignUp? 'Already have account? Login' : "New here? Create Account (Sign Up)"}</button>
+
+        <div className="flex items-center my-4"><div className="flex-1 h-px bg-white/10"/><span className="px-2 text-[10px] text-white/30">OR</span><div className="flex-1 h-px bg-white/10"/></div>
+
+        <button onClick={handleGuest} className="w-full bg-white/5 border border-white/10 text-white py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-white/10"><Eye className="w-4 h-4"/> Continue as Guest (View Only)</button>
+        <p className="text-[10px] text-white/30 text-center mt-2">Guest cannot Like, Comment, Post - Only View</p>
       </div>
     </div>
-  );
-};
+  )
+    }
