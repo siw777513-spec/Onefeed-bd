@@ -1,4 +1,4 @@
-// v12 - Friends Hub Live Fix
+console.log("ONEFEED V13 LIVE", Date.now());
 import React, { useState, useEffect } from 'react';
 import { ColumnId, GiftOption, SocialItem, Transaction, UserProfile, UserSettings } from './types';
 import { getStoredItems, saveStoredItems, getStoredProfile, saveStoredProfile, getStoredSettings, saveStoredSettings, getStoredCurrentUser, saveStoredCurrentUser, logoutCurrentUser, clearAllStorage, DEFAULT_PROFILE, DEFAULT_SETTINGS } from './utils/storage';
@@ -54,7 +54,6 @@ export default function App() {
   const activeUser = currentUser || profile;
   const isOwner = (activeUser?.email || '').toLowerCase().trim() === 'siw777513@gmail.com';
 
-  // LIVE FIREBASE
   useEffect(() => {
     const q = query(collection(db, "posts"), orderBy("timestamp", "desc"));
     const unsub = onSnapshot(q, (snap) => {
@@ -66,7 +65,7 @@ export default function App() {
           text: data.text || '',
           image: data.image || data.videoUrl || '',
           videoUrl: data.videoUrl || null,
-          mediaType: data.mediaType || (data.videoUrl ? 'video' : 'image'),
+          mediaType: data.mediaType || (data.videoUrl? 'video' : 'image'),
           likeCount: data.likeCount || 0,
           views: data.views || 0,
           commentCount: data.commentCount || 0,
@@ -79,8 +78,8 @@ export default function App() {
       });
       if (fbPosts.length > 0) {
         setItems(prev => {
-          const mocks = getStoredItems().filter(m => !fbPosts.some(f => f.text === m.text));
-          return [...fbPosts, ...mocks];
+          const mocks = getStoredItems().filter(m =>!fbPosts.some(f => f.text === m.text));
+          return [...fbPosts,...mocks];
         });
       }
     });
@@ -90,34 +89,26 @@ export default function App() {
   const handleOpenProfile = (u?: UserProfile) => { setSelectedProfileUser(u || activeUser); setIsProfileOpen(true); };
   const handleLoginSuccess = (user: UserProfile) => { setCurrentUser(user); setProfile(user); saveStoredCurrentUser(user); saveStoredProfile(user); };
   const handleLogout = () => { logoutCurrentUser(); setCurrentUser(null); };
-  
+
   const handleDeletePost = async (id: string) => {
-    try {
-      await deleteDoc(doc(db, "posts", id));
-      console.log("Deleted from Firebase:", id);
-    } catch (e) {
-      console.error("Firebase delete failed", e);
-    }
-    setItems((prev) => prev.filter((item) => item.id !== id));
+    try { await deleteDoc(doc(db, "posts", id)); } catch (e) { console.error(e); }
+    setItems((prev) => prev.filter((item) => item.id!== id));
     if (selectedPost && selectedPost.id === id) setSelectedPost(null);
   };
 
   const handleLikeToggle = async (id: string) => {
-    setItems(p => p.map(i => i.id === id ? { ...i, isLiked: !i.isLiked, likeCount: !i.isLiked ? i.likeCount + 1 : Math.max(0, i.likeCount - 1) } : i));
-    try {
-      const postRef = doc(db, "posts", id);
-      await updateDoc(postRef, { likeCount: increment(1) });
-    } catch(e) {}
+    setItems(p => p.map(i => i.id === id? {...i, isLiked:!i.isLiked, likeCount:!i.isLiked? i.likeCount + 1 : Math.max(0, i.likeCount - 1) } : i));
+    try { await updateDoc(doc(db, "posts", id), { likeCount: increment(1) }); } catch(e) {}
   };
-  
+
   const handleAddComment = (itemId: string, commentText: string) => {};
   const handleShareOpen = (item: SocialItem) => setSelectedSharePost(item);
   const handleOpenReport = (item: SocialItem) => setSelectedReportPost(item);
   const handleOpenGift = (item: SocialItem) => setSelectedGiftPost(item);
   const handleOpenTip = (item: SocialItem) => setSelectedGiftPost(item);
   const handleSubscribeCreator = (handle: string) => {};
-  const handleFollowToggle = (h: string) => { setItems(p => p.map(i => i.author.handle === h ? { ...i, author: { ...i.author, isFollowing: !i.author.isFollowing } } : i)); };
-  
+  const handleFollowToggle = (h: string) => { setItems(p => p.map(i => i.author.handle === h? {...i, author: {...i.author, isFollowing:!i.author.isFollowing } } : i)); };
+
   if (!currentUser) return <LoginModal onLoginSuccess={handleLoginSuccess} />;
 
   return (
@@ -140,9 +131,9 @@ export default function App() {
         <ShareModal item={selectedSharePost} onClose={()=>setSelectedSharePost(null)} lang={settings.language} />
         <ReportModal item={selectedReportPost} onClose={()=>setSelectedReportPost(null)} onConfirmReport={()=>{}} />
         <DailyRewardModal isOpen={isDailyRewardOpen} onClose={()=>setIsDailyRewardOpen(false)} currentUser={activeUser} onClaimReward={()=>{}} />
-        <WalletModal isOpen={isWalletOpen} onClose={()=>setIsWalletOpen(false)} coinBalance={activeUser.coinBalance ?? 500} transactions={transactions} onBuyCoins={()=>{}} />
-        <GiftModal isOpen={!!selectedGiftPost} onClose={()=>setSelectedGiftPost(null)} item={selectedGiftPost} userCoins={activeUser.coinBalance ?? 500} onSendGift={()=>{}} onOpenBuyCoins={()=>{setSelectedGiftPost(null); setIsWalletOpen(true);}} />
+        <WalletModal isOpen={isWalletOpen} onClose={()=>setIsWalletOpen(false)} coinBalance={activeUser.coinBalance?? 500} transactions={transactions} onBuyCoins={()=>{}} />
+        <GiftModal isOpen={!!selectedGiftPost} onClose={()=>setSelectedGiftPost(null)} item={selectedGiftPost} userCoins={activeUser.coinBalance?? 500} onSendGift={()=>{}} onOpenBuyCoins={()=>{setSelectedGiftPost(null); setIsWalletOpen(true);}} />
       </div>
     </PhoneContainer>
   );
-         }
+}
