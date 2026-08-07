@@ -1,71 +1,27 @@
-import { useState } from 'react';
-
-export default function ProfilePage() {
-  const [activeTab, setActiveTab] = useState('feed');
-  
-  const stats = [
-    { label: 'লাইক', value: '12.3K' },
-    { label: 'ফ্রেন্ড', value: '842' },
-    { label: 'ফলোয়ার', value: '45.6K' },
-    { label: 'সাবস্ক্রাইবার', value: '9.1K' },
-  ];
-
-  const tabs = [
-    { id: 'feed', label: 'ফিড', icon: '🎞️' },
-    { id: 'short', label: 'সর্ট', icon: '🎞️' },
-    { id: 'watch', label: 'ওয়াচ', icon: '🎬' },
-    { id: 'story', label: 'স্টরি', icon: '🎞️' },
-  ];
-
+export default function ProfilePage({ onBack }: { onBack?: () => void }) {
   return (
-    <div className="max-w-md mx-auto bg-white min-h-screen">
-      {/* Header */}
-      <div className="p-4 flex items-center gap-4">
-        <img src="https://i.pravatar.cc/100" className="w-20 h-20 rounded-full" />
-        <div>
-          <h1 className="text-xl font-bold">Sakib Islam</h1>
-          <p className="text-gray-500">@sakib.islam</p>
-        </div>
+    <div className="max-w-[600px] mx-auto bg-white min-h-screen pb-24">
+      {onBack && <div className="p-3 border-b"><button onClick={onBack} className="px-4 py-2 bg-gray-100 rounded-full">← Back</button></div>}
+      <div className="p-5 flex gap-5 items-center">
+        <img src="https://i.pravatar.cc/150?img=12" className="w-24 h-24 rounded-full" />
+        <div><h1 className="text-2xl font-black">Sakib Islam</h1><p className="text-gray-500">@sakib.islam</p></div>
       </div>
-
-      {/* Stats - তোমার চাওয়া ডিজাইন */}
-      <div className="flex justify-around py-4 border-y text-center">
-        {stats.map(s => (
-          <div key={s.label}>
-            <div className="font-bold text-lg">{s.value}</div>
-            <div className="text-sm text-gray-500">{s.label}</div>
-          </div>
-        ))}
+      <div className="grid grid-cols-4 text-center py-5 border-y bg-gray-50">
+        <div><p className="font-black text-xl">3.2K</p><p className="text-xs">লাইক</p></div>
+        <div><p className="font-black text-xl">1.5K</p><p className="text-xs">ফ্রেন্ড</p></div>
+        <div><p className="font-black text-xl">45K</p><p className="text-xs">ফলোয়ার</p></div>
+        <div><p className="font-black text-xl">9.1K</p><p className="text-xs">সাবস্ক্রাইবার</p></div>
       </div>
-
-      {/* Own Video Title */}
-      <div className="p-4">
-        <h2 className="font-bold text-lg">নিজের ভিডিও</h2>
+      <div className="p-4 font-black text-lg">নিজের ভিডিও</div>
+      <div className="flex gap-2 px-4">
+        <button className="flex-1 py-3 rounded-xl bg-black text-white">🎞️ ফিড</button>
+        <button className="flex-1 py-3 rounded-xl bg-gray-100">🎞️ সর্ট</button>
+        <button className="flex-1 py-3 rounded-xl bg-gray-100">🎬 ওয়াচ</button>
+        <button className="flex-1 py-3 rounded-xl bg-gray-100">🎞️ স্টরি</button>
       </div>
-
-      {/* Tabs - Feed Short Watch Story */}
-      <div className="flex gap-2 px-4 overflow-x-auto">
-        {tabs.map(tab => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={`flex items-center gap-1 px-4 py-2 rounded-full whitespace-nowrap ${
-              activeTab === tab.id ? 'bg-black text-white' : 'bg-gray-100'
-            }`}
-          >
-            <span>{tab.icon}</span> {tab.label}
-          </button>
-        ))}
-      </div>
-
-      {/* Video Grid */}
-      <div className="grid grid-cols-2 gap-2 p-4">
-        {[1,2,3,4].map(i => (
-          <div key={i} className="bg-gray-100 rounded-lg h-32 flex items-center justify-center">
-            🎬 Video {i}
-          </div>
-        ))}
+      <div className="grid grid-cols-2 gap-3 p-4">
+        {[1,2,3,4].map(n=><div key={n} className="aspect-[9/16] bg-gray-200 rounded-2xl flex items-center justify-center">Video {n}</div>)}
       </div>
     </div>
-  );
-                                        }
+  )
+}
