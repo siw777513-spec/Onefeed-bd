@@ -31,10 +31,12 @@ export const TopBar: React.FC<TopBarProps> = ({ onOpenCreate, onOpenNotification
           <span className="font-extrabold text-sm sm:text-base tracking-tight bg-gradient-to-r from-white via-slate-100 to-cyan-300 bg-clip-text text-transparent truncate">OneFeed</span>
           <span className="hidden sm:inline-flex text-[8px] font-bold tracking-wider px-1 py-0.2 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 uppercase items-center gap-0.5 shrink-0"><Radio className="w-2 h-2 text-cyan-400 animate-ping" />5-in-1</span>
         </div>
-      </div>
       <div className="flex items-center space-x-1 sm:space-x-1.5 shrink-0 ml-auto">
         {onOpenDailyReward && (<button onClick={onOpenDailyReward} className="flex items-center space-x-1 px-1.5 sm:px-2 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/40 text-amber-300 text-[11px] font-bold shrink-0"><Flame className="w-3.5 h-3.5 text-amber-400 fill-amber-400 animate-bounce" /><span>5</span></button>)}
-        {onOpenWallet && (<button onClick={onOpenWallet} className="hidden xs:flex items-center space-x-1 px-1.5 sm:px-2 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/40 text-amber-300 text-[11px] font-mono font-bold shrink-0"><span>🪙</span><span>{currentUser?.coinBalance?? 500}</span></button>)}
+
+        {/* WALLET BUTTON - FIXED VISIBLE ON MOBILE */}
+        {onOpenWallet && (<button onClick={onOpenWallet} className="flex items-center space-x-1 px-2.5 py-1 rounded-full bg-gradient-to-r from-amber-400 to-yellow-300 border border-amber-300 text-black text-[12px] font-black shrink-0 shadow-lg shadow-amber-500/30 animate-pulse"><span>💰</span><span>{currentUser?.coinBalance?? 500}</span></button>)}
+
         {onOpenFriends && (<button onClick={() => onOpenFriends('friends')} className="p-1.5 rounded-full text-slate-300 hover:text-cyan-400 hover:bg-white/10 shrink-0"><Users className="w-4 h-4 text-cyan-400" /></button>)}
         <button onClick={onOpenSearch} className="p-1.5 rounded-full text-slate-300 hover:text-white hover:bg-white/10 shrink-0"><Search className="w-4 h-4" /></button>
         <button onClick={onOpenNotifications} className="relative p-1.5 rounded-full text-slate-300 hover:text-white hover:bg-white/10 shrink-0"><Bell className="w-4 h-4" />{unreadCount > 0 && <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-[#FF007A] ring-2 ring-[#0A0A0F]" />}</button>
@@ -63,12 +65,6 @@ export const TopBar: React.FC<TopBarProps> = ({ onOpenCreate, onOpenNotification
                 <button onClick={() => setLang(lang === 'EN'? 'BN' : 'EN')} className="w-full text-left px-2.5 py-1.5 rounded-xl hover:bg-white/10 flex items-center justify-between text-xs"><div className="flex items-center space-x-2"><Globe className="w-3.5 h-3.5 text-emerald-400" /><span>Language ({lang})</span></div><span className="px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 text-[9px] font-bold">{lang}</span></button>
               </div>
               <div className="h-[1px] bg-white/10" />
-              <div className="space-y-1">
-                <span className="text-[9px] font-extrabold uppercase text-amber-400 px-2">My Account</span>
-                <button onClick={() => handleOpenTab('profile')} className="w-full text-left px-2.5 py-1.5 rounded-xl hover:bg-white/10 flex items-center justify-between text-xs"><div className="flex items-center space-x-2"><User className="w-3.5 h-3.5 text-cyan-400" /><span>Edit Profile</span></div><ChevronRight className="w-3.5 h-3.5" /></button>
-                <button onClick={() => handleOpenTab('password')} className="w-full text-left px-2.5 py-1.5 rounded-xl hover:bg-white/10 flex items-center justify-between text-xs"><div className="flex items-center space-x-2"><Key className="w-3.5 h-3.5 text-amber-400" /><span>Change Password</span></div><ChevronRight className="w-3.5 h-3.5" /></button>
-              </div>
-              <div className="h-[1px] bg-white/10" />
               <button onClick={() => { setIsMenuOpen(false); if (onLogout) onLogout(); }} className="w-full text-left px-2.5 py-2 rounded-xl bg-rose-500/15 hover:bg-rose-500/30 text-rose-400 font-extrabold flex items-center justify-between text-xs border border-rose-500/30 mt-1.5"><div className="flex items-center space-x-2"><LogOut className="w-4 h-4 text-rose-500" /><span>Logout</span></div><ChevronRight className="w-3.5 h-3.5" /></button>
             </div>
           )}
@@ -77,4 +73,3 @@ export const TopBar: React.FC<TopBarProps> = ({ onOpenCreate, onOpenNotification
     </header>
   );
 };
- 
