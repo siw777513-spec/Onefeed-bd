@@ -1,133 +1,123 @@
 import { useState } from 'react';
 
-const photos = [
+const BG = "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=1200";
+const FEED_IMGS = [
   "https://images.unsplash.com/photo-1493246507139-91e8fad9978e?w=800",
   "https://images.unsplash.com/photo-1596422846543-75c6fc197f07?w=800",
-  "https://images.unsplash.com/photo-1572949791660-6626e0e8d482?w=800",
-  "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=800",
+  "https://images.unsplash.com/photo-1514924013411-cbf25faa35bb?w=800",
 ];
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<'Feed'|'Short'|'Watch'|'Story'>('Feed');
-  const [showInbox, setShowInbox] = useState(false);
+  const [tab, setTab] = useState('Feed');
+  const [inbox, setInbox] = useState(false);
 
   return (
-    <div className="min-h-screen bg-[#030a0f] text-white flex justify-center p-2 font-sans relative overflow-hidden">
-      {/* Background Glow */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-cyan-500/20 rounded-full blur-[120px]"></div>
-      <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-teal-500/15 rounded-full blur-[100px]"></div>
+    <div className="min-h-screen flex justify-center bg-black">
+      {/* Phone Frame with Rainy Dhaka Background */}
+      <div className="w-full max-w-[420px] h-[100vh] relative overflow-hidden bg-cover bg-center" style={{backgroundImage:`url(${BG})`}}>
+        <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px]"></div>
+        <div className="absolute inset-0 bg-gradient-to-b from-cyan-900/30 via-transparent to-black/80"></div>
 
-      <div className="w-full max-w-[420px] relative z-10 bg-gradient-to-b from-white/[0.08] to-white/[0.02] backdrop-blur-[30px] rounded-[42px] border border-white/[0.15] shadow-[inset_0_1px_1px_rgba(255,255,255,0.4),0_20px_80px_rgba(0,0,0,0.6),0_0_40px_rgba(6,182,212,0.15)] flex flex-col h-[92vh] overflow-hidden">
+        {/* Content Layer */}
+        <div className="relative z-10 h-full flex flex-col p-3">
 
-        {/* Header Water Glass */}
-        <div className="p-5">
-          <div className="relative bg-gradient-to-br from-white/[0.12] to-white/[0.04] backdrop-blur-2xl rounded-[20px] border border-white/20 p-[1px] shadow-[inset_0_1px_0_rgba(255,255,255,0.3),0_8px_32px_rgba(0,0,0,0.3)]">
-            <div className="bg-black/20 backdrop-blur-xl rounded-[19px] p-4 flex justify-between items-center">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-300 to-teal-500 shadow-[0_0_15px_#22d3ee]"></div>
-                <h1 className="text-[22px] font-black tracking-[0.1em] text-transparent bg-clip-text bg-gradient-to-r from-white to-cyan-200">OneFeedBD</h1>
-              </div>
-              <div className="flex gap-2">
-                <div className="w-9 h-9 rounded-full bg-white/[0.08] backdrop-blur border border-white/10 flex items-center justify-center">🔍</div>
-                <div className="w-9 h-9 rounded-full bg-white/[0.08] backdrop-blur border border-white/10 flex items-center justify-center">🔔</div>
-              </div>
+          {/* Top Glass Bar - Like Image */}
+          <div className="bg-white/[0.08] backdrop-blur-[20px] border border-white/20 rounded-[20px] p-3 flex justify-between items-center shadow-[0_8px_32px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.3)]">
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-lg bg-cyan-400 shadow-[0_0_15px_#22d3ee]"></div>
+              <span className="font-black tracking-widest text-cyan-100">OneFeedBD ✨</span>
             </div>
-            <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/40 to-transparent"></div>
-            <div className="absolute inset-x-0 bottom-0 h-[1px] bg-gradient-to-r from-transparent via-cyan-400/50 to-transparent"></div>
+            <div className="flex gap-2">
+              <div className="w-9 h-9 rounded-full bg-white/10 border border-white/10 flex items-center justify-center backdrop-blur">🔍</div>
+              <div className="w-9 h-9 rounded-full bg-white/10 border border-white/10 flex items-center justify-center backdrop-blur">🔔</div>
+            </div>
           </div>
 
-          {/* Tabs Water Glass */}
-          <div className="grid grid-cols-4 gap-2 mt-4">
-            {(['Feed','Short','Watch','Story'] as const).map(tab => (
-              <button key={tab} onClick={()=>setActiveTab(tab)}
-                className={`relative py-[14px] rounded-[16px] text-[12px] font-bold tracking-wide transition-all duration-300 border overflow-hidden
-                ${activeTab===tab
-                 ? 'bg-gradient-to-br from-cyan-400/30 to-teal-400/20 text-cyan-100 border-cyan-300/50 shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_0_20px_rgba(34,211,238,0.4)]'
-                  : 'bg-white/[0.06] backdrop-blur-xl border-white/[0.08] text-white/50 hover:bg-white/[0.10]'}`}>
-                {activeTab===tab && <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent pointer-events-none"></div>}
-                <span className="relative z-10">{tab}</span>
+          {/* Tabs - Like Image */}
+          <div className="flex gap-2 mt-3">
+            {[
+              {k:'Feed', icon:'🏠'}, {k:'Short', icon:'🎵'}, {k:'Watch', icon:'▶️'}, {k:'Story', icon:'✨'}
+            ].map(t=>(
+              <button key={t.k} onClick={()=>setTab(t.k)}
+                className={`flex-1 py-3 rounded-full text-xs font-bold border backdrop-blur-xl transition-all
+                ${tab===t.k? 'bg-cyan-400/30 border-cyan-300 text-cyan-100 shadow-[0_0_20px_rgba(34,211,238,0.6),inset_0_1px_0_rgba(255,255,255,0.4)]' : 'bg-white/10 border-white/10 text-white/60'}`}>
+                {t.icon} {t.k}
               </button>
             ))}
           </div>
-        </div>
 
-        {/* Content */}
-        <div className="flex-1 overflow-y-auto px-4 pb-28 scrollbar-hide">
-          {activeTab==='Feed' && (
-            <div className="space-y-5">
-              {photos.map((p,i)=>(
-                <div key={i} className="group relative rounded-[28px] p-[1px] bg-gradient-to-b from-white/20 to-white/5">
-                  <div className="rounded-[27px] overflow-hidden bg-black/30 backdrop-blur-xl border border-white/5">
-                    <img src={p} className="w-full h-auto" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none"></div>
-                    <div className="relative p-4 flex justify-between items-center bg-white/[0.04] backdrop-blur-md">
-                      <div className="flex gap-4 text-xs">
-                        <span className="bg-white/10 backdrop-blur px-3 py-1.5 rounded-full border border-white/10">❤️ 12.4K</span>
-                        <span className="bg-white/10 backdrop-blur px-3 py-1.5 rounded-full border border-white/10">💬 321</span>
-                      </div>
-                      <span className="text-[10px] text-white/40">@riaz_dhaka</span>
+          {/* Main Card - Like Rainy Image in Screenshot */}
+          <div className="flex-1 mt-3 overflow-y-auto scrollbar-hide pb-24">
+            {tab==='Feed' && (
+              <div className="space-y-4">
+                {FEED_IMGS.map((img,i)=>(
+                  <div key={i} className="relative rounded-[28px] overflow-hidden border border-white/20 shadow-[0_20px_60px_rgba(0,0,0,0.5)]">
+                    {/* LIVE Badge */}
+                    <div className="absolute top-3 left-3 z-20 bg-black/50 backdrop-blur-md border border-red-400/30 text-[10px] px-3 py-1 rounded-full flex items-center gap-1">
+                      <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span> LIVE • 1.2k watching
                     </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-          {activeTab!=='Feed' && (
-            <div className="h-64 flex items-center justify-center bg-white/[0.03] backdrop-blur-xl rounded-[24px] border border-white/10 text-white/30">
-              {activeTab} Coming Soon...
-            </div>
-          )}
-        </div>
 
-        {/* Floating Message - Liquid Glass */}
-        <button onClick={()=>setShowInbox(true)}
-          className="absolute bottom-[100px] right-5 w-[62px] h-[62px] rounded-full bg-gradient-to-br from-white/20 to-white/5 backdrop-blur-2xl border border-white/20 shadow-[inset_0_1px_1px_rgba(255,255,255,0.5),0_10px_30px_rgba(6,182,212,0.4)] flex items-center justify-center text-xl">
-          <div className="w-11 h-11 rounded-full bg-gradient-to-br from-cyan-400 to-teal-400 flex items-center justify-center text-black shadow-[0_0_20px_#22d3ee]">💬</div>
-        </button>
+                    <img src={img} className="w-full h-[520px] object-cover" />
 
-        {/* Bottom Nav - Water Glass */}
-        <div className="absolute bottom-3 left-3 right-3">
-          <div className="relative bg-gradient-to-b from-white/[0.12] to-white/[0.04] backdrop-blur-[25px] rounded-[28px] border border-white/15 shadow-[inset_0_1px_0_rgba(255,255,255,0.3),0_15px_40px_rgba(0,0,0,0.4)] p-[1px]">
-            <div className="bg-black/30 backdrop-blur-xl rounded-[27px] flex justify-around items-center py-3">
-              {[
-                {icon:'🏠',label:'Home',active:true},
-                {icon:'🔍',label:'Search',active:false},
-                {icon:'+',label:'Plus',center:true},
-                {icon:'✉️',label:'Inbox',active:false, badge:3},
-                {icon:'👤',label:'Profile',active:false},
-              ].map((b,i)=>(
-                b.center? (
-                  <button key={i} className="w-14 h-14 rounded-full bg-gradient-to-br from-cyan-400 to-teal-400 shadow-[0_0_25px_#22d3ee,inset_0_1px_1px_rgba(255,255,255,0.8)] flex items-center justify-center text-3xl text-black font-bold">+</button>
-                ) : (
-                  <button key={i} onClick={()=>b.label==='Inbox'&&setShowInbox(true)} className={`relative text-center ${b.active?'text-cyan-300':''}`}>
-                    <div className="text-[18px]">{b.icon}{b.badge&&<span className="absolute -top-1 -right-2 bg-red-500 text-[8px] px-1 rounded-full text-white">{b.badge}</span>}</div>
-                    <span className="text-[9px] opacity-60">{b.label}</span>
-                  </button>
-                )
-              ))}
-            </div>
-          </div>
-        </div>
+                    {/* Right Side Buttons - Like Image */}
+                    <div className="absolute right-2 top-1/2 -translate-y-1/2 flex flex-col gap-3">
+                      {[
+                        {icon:'🤍', txt:'12.4k'}, {icon:'💬', txt:'832'}, {icon:'↗️', txt:'Share'}, {icon:'🔖', txt:'Save'}
+                      ].map((b,j)=>(
+                        <div key={j} className="w-14 h-16 rounded-full bg-white/10 backdrop-blur-2xl border border-white/20 flex flex-col items-center justify-center shadow-[inset_0_1px_0_rgba(255,255,255,0.3)]">
+                          <span>{b.icon}</span><span className="text-[10px]">{b.txt}</span>
+                        </div>
+                      ))}
+                    </div>
 
-        {showInbox && (
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-[20px] z-50 p-5">
-            <div className="bg-white/[0.08] backdrop-blur-2xl border border-white/15 rounded-[24px] p-5">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="font-black">Messages</h2>
-                <button onClick={()=>setShowInbox(false)} className="w-8 h-8 rounded-full bg-white/10">✕</button>
-              </div>
-              <div className="space-y-3">
-                {['Sakib','Nila'].map(n=>(
-                  <div key={n} className="bg-white/[0.06] p-3 rounded-xl flex gap-3 border border-white/5">
-                    <div className="w-10 h-10 rounded-full bg-cyan-400/20"></div>
-                    <div><p className="font-bold text-sm">{n}</p><p className="text-xs text-white/40">Hey, nice post!</p></div>
+                    {/* Bottom Info - Glass */}
+                    <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
+                      <div className="flex items-center gap-2">
+                        <img src="https://i.pravatar.cc/100?img=12" className="w-8 h-8 rounded-full border border-cyan-400" />
+                        <span className="font-bold text-sm">@ahasan_ride ✔️</span>
+                      </div>
+                      <p className="text-xs mt-2 text-white/70">Evening rickshaw ride through Dhanmondi 🌧️✨ #Monsoon2026</p>
+                      <div className="flex gap-2 mt-3">
+                        <span className="text-[10px] px-3 py-1 rounded-full bg-white/10 backdrop-blur border border-white/10">#RainyDhaka</span>
+                        <span className="text-[10px] px-3 py-1 rounded-full bg-white/10 backdrop-blur border border-white/10">#RickshawRide</span>
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>
-            </div>
+            )}
+
+            {tab!=='Feed' && (
+              <div className="bg-white/10 backdrop-blur-2xl border border-white/20 rounded-[24px] p-10 text-center text-white/50">
+                {tab} - {tab==='Short'? '15-60s vertical videos' : tab==='Watch'? 'Long 1min-3hr videos' : 'Photo+Video+Text 24h expiry'}
+              </div>
+            )}
           </div>
-        )}
+
+          {/* Bottom Glass Nav */}
+          <div className="absolute bottom-3 left-3 right-3 bg-white/[0.08] backdrop-blur-[25px] border border-cyan-300/30 rounded-[28px] flex justify-around items-center py-3 shadow-[0_0_30px_rgba(6,182,212,0.3),inset_0_1px_0_rgba(255,255,255,0.3)]">
+            <button className="text-cyan-300 text-center"><div>🏠</div><div className="text-[9px]">Home</div></button>
+            <button className="text-white/60 text-center"><div>🔍</div><div className="text-[9px]">Search</div></button>
+            <button className="w-12 h-12 rounded-full bg-cyan-400 shadow-[0_0_20px_#22d3ee] flex items-center justify-center text-black text-2xl">+</button>
+            <button onClick={()=>setInbox(true)} className="relative text-white/60 text-center"><div>✉️</div><div className="text-[9px]">Inbox</div><span className="absolute -top-1 -right-1 bg-red-500 text-[7px] px-1 rounded-full text-white">3</span></button>
+            <button className="text-white/60 text-center"><div>👤</div><div className="text-[9px]">Profile</div></button>
+          </div>
+
+          {/* Message Bubble - Like Image */}
+          <button onClick={()=>setInbox(true)} className="absolute bottom-[85px] right-5 w-16 h-16 rounded-full bg-white/10 backdrop-blur-2xl border border-cyan-300/50 shadow-[0_0_30px_rgba(34,211,238,0.5)] flex items-center justify-center">
+            <div className="w-12 h-12 rounded-full bg-cyan-400 flex items-center justify-center">💬</div>
+          </button>
+
+          {inbox && (
+            <div className="absolute inset-0 bg-black/70 backdrop-blur-xl z-50 p-4">
+              <div className="bg-white/10 backdrop-blur-2xl border border-white/20 rounded-[20px] p-4">
+                <div className="flex justify-between mb-4"><b>Messages</b><button onClick={()=>setInbox(false)}>✕</button></div>
+                <p className="text-xs text-white/50">Message system ready - users can chat here</p>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
-                  }
+                      }
