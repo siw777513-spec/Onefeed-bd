@@ -1,131 +1,191 @@
-import React, { useState, useEffect } from 'react';
-import { ColumnId, SocialItem, UserProfile } from './types';
-import { getStoredItems, getStoredProfile, getStoredCurrentUser, saveStoredCurrentUser } from './utils/storage';
-import { PhoneContainer } from './components/PhoneContainer';
-import { TopBar } from './components/TopBar';
-import { ColumnsContainer } from './components/ColumnsContainer';
-import { BottomNav } from './components/BottomNav';
-import { LeftSidebar } from './components/LeftSidebar';
-import { RightSidebar } from './components/RightSidebar';
-import { LoginModal } from './components/LoginModal';
-import { db } from './lib/firebase';
-import { collection, onSnapshot, query, orderBy, doc, deleteDoc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
+import { useState, useEffect } from 'react';
+import TopBar from './components/TopBar';
+import BottomNav from './components/BottomNav';
+import StoriesBar from './components/StoriesBar';
+import FeedCard from './components/FeedCard';
+import ShortsCard from './components/ShortsCard';
+import WatchCard from './components/WatchCard';
+import LeftSidebar from './components/LeftSidebar';
+import RightSidebar from './components/RightSidebar';
+import CreatePostModal from './components/CreatePostModal';
+import LoginModal from './components/LoginModal';
+import ProfileModal from './components/ProfileModal';
+import NotificationModal from './components/NotificationModal';
+import ChatCard from './components/ChatCard';
+import WalletModal from './components/WalletModal';
+import SearchModal from './components/SearchModal';
+import SettingsModal from './components/SettingsModal';
 
-const CreatePostModal = React.lazy(() => import('./components/CreatePostModal').then(m=>({default:m.CreatePostModal})));
-const PostDetailModal = React.lazy(() => import('./components/PostDetailModal').then(m=>({default:m.PostDetailModal})));
-const NotificationModal = React.lazy(() => import('./components/NotificationModal').then(m=>({default:m.NotificationModal})));
-const SearchModal = React.lazy(() => import('./components/SearchModal').then(m=>({default:m.SearchModal})));
-const SettingsModal = React.lazy(() => import('./components/SettingsModal').then(m=>({default:m.SettingsModal})));
-const ShareModal = React.lazy(() => import('./components/ShareModal').then(m=>({default:m.ShareModal})));
-const ReportModal = React.lazy(() => import('./components/ReportModal').then(m=>({default:m.ReportModal})));
-const ProfileModal = React.lazy(() => import('./components/ProfileModal').then(m=>({default:m.ProfileModal})));
-const FriendsModal = React.lazy(() => import('./components/FriendsModal').then(m=>({default:m.FriendsModal})));
-const WalletModal = React.lazy(() => import('./components/WalletModal').then(m=>({default:m.WalletModal})));
-const GiftModal = React.lazy(() => import('./components/GiftModal').then(m=>({default:m.GiftModal})));
+// --- PROFILE PAGE WITH YOUR DESIGN ---
+function ProfilePage({ onBack }: { onBack: () => void }) {
+  const [activeTab, setActiveTab] = useState('feed');
+  const stats = [
+    { label: 'লাইক', value: '12.3K' },
+    { label: 'ফ্রেন্ড', value: '1.2K' },
+    { label: 'ফলোয়ার', value: '45.6K' },
+    { label: 'সাবস্ক্রাইবার', value: '9.1K' },
+  ];
+  const tabs = [
+    { id: 'feed', label: 'ফিড', icon: '🎞️' },
+    { id: 'short', label: 'সর্ট', icon: '🎞️' },
+    { id: 'watch', label: 'ওয়াচ', icon: '🎬' },
+    { id: 'story', label: 'স্টরি', icon: '🎞️' },
+  ];
 
-class EB extends React.Component<any,any>{state={hasError:false};static getDerivedStateFromError(){return {hasError:true}};render(){return this.state.hasError?null:this.props.children}}
-
-export default function App(){
-  const [currentUser, setCurrentUser] = useState<UserProfile | null>(()=>{try{return getStoredCurrentUser()}catch{return null}});
-  const [items, setItems] = useState<SocialItem[]>(()=>{try{return getStoredItems()}catch{return []}});
-  const [profile] = useState(()=>{try{return getStoredProfile()}catch{return {name:'Sakib',handle:'@sakib',avatar:'https://i.pravatar.cc/150?u=sakib'} as any}});
-  const [activeColumn, setActiveColumn] = useState<ColumnId | 'all'>('all');
-  const [selectedPost, setSelectedPost] = useState<SocialItem | null>(null);
-  const [selectedSharePost, setSelectedSharePost] = useState<SocialItem | null>(null);
-  const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [createDefaultColumn, setCreateDefaultColumn] = useState<ColumnId>('feed');
-  const [isNotifOpen, setIsNotifOpen] = useState(false);
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const [isFriendsOpen, setIsFriendsOpen] = useState(false);
-  const [isWalletOpen, setIsWalletOpen] = useState(false);
-  const [selectedGiftPost, setSelectedGiftPost] = useState<SocialItem | null>(null);
-  const [selectedReportPost, setSelectedReportPost] = useState<SocialItem | null>(null);
-
-  const activeUser = currentUser || profile;
-  const isGuest = (currentUser as any)?.isGuest || localStorage.getItem('onefeed_isGuest')==='true';
-  const getUserId = ()=> (currentUser as any)?.uid || (currentUser as any)?.email || activeUser.handle || 'guest';
-
-  const guardGuest = (action='do this')=>{
-    if(isGuest){ alert(`🚫 Guest Mode!\nPlease Sign Up to ${action}`); return true; }
-    return false;
-  };
-
-  const handleLikeToggle = async (id: string) => {
-    if(guardGuest('like posts')) return;
-    const userId = getUserId();
-    const post = items.find(p=>p.id===id);
-    if(!post) return;
-    const alreadyLiked = (post as any).likedBy?.includes(userId) || post.isLiked;
-    setItems(prev => prev.map(i => {
-      if(i.id!== id) return i;
-      const likedBy = (i as any).likedBy || [];
-      const newLikedBy = alreadyLiked? likedBy.filter((x:any)=>x!==userId) : [...likedBy, userId];
-      return {...i, isLiked:!alreadyLiked, likeCount: newLikedBy.length, likedBy: newLikedBy } as any;
-    }));
-    try {
-      const postRef = doc(db, "posts", id);
-      if(alreadyLiked){ await updateDoc(postRef, { likedBy: arrayRemove(userId) }); }
-      else { await updateDoc(postRef, { likedBy: arrayUnion(userId) }); }
-    } catch(e){ console.log(e); }
-  };
-
-  const handleAddComment = async (postId: string, text: string) => {
-    if(guardGuest('comment')) return;
-    if(!text.trim()) return;
-    const comment = { id: Date.now().toString(), text, userName: activeUser.name, userAvatar: activeUser.avatar, timestamp: new Date().toISOString() };
-    setItems(prev=>prev.map(p=>p.id===postId?{...p, comments:[...(p as any).comments||[], comment], commentCount:(p.commentCount||0)+1}:p) as any);
-    try{ const postRef = doc(db, "posts", postId); await updateDoc(postRef, { comments: arrayUnion(comment) }); }catch{}
-  };
-
-  useEffect(()=>{
-    try{
-      const q = query(collection(db, "posts"), orderBy("timestamp", "desc"));
-      const unsub = onSnapshot(q, (snap)=>{
-        const userId = getUserId();
-        const fb = snap.docs.map(d=>{
-          const data=d.data() as any;
-          const likedBy = data.likedBy || [];
-          return { id:d.id, column:data.column||'feed', text:data.text||'', image:data.image||data.videoUrl||'', videoUrl:data.videoUrl||null, mediaType:'image', likeCount: likedBy.length, views:0, commentCount:(data.comments?.length||0), isLiked: likedBy.includes(userId), likedBy: likedBy, timestamp:'Just now', author:{name:data.userName||'User',handle:data.userHandle||'@user',avatar:data.userAvatar||'',verified:false,online:true,isFollowing:false}, tags:[], comments:data.comments||[], messages:[], userId:data.userId } as any;
-        });
-        if(fb.length>0) setItems(fb);
-      });
-      return ()=>unsub();
-    }catch{}
-  },[currentUser]);
-
-  const handleLogin = (u:UserProfile)=>{localStorage.removeItem('onefeed_isGuest'); setCurrentUser(u); saveStoredCurrentUser(u);};
-  const handleGuest = ()=>{const guest={name:'Guest Viewer',handle:'@guest',avatar:'',verified:false,isGuest:true, email:'guest@onefeed.com'} as any; localStorage.setItem('onefeed_isGuest','true'); setCurrentUser(guest); saveStoredCurrentUser(guest);};
-  const handleLogout = ()=>{localStorage.clear(); location.reload();};
-
-  if(!currentUser){ return <LoginModal onLoginSuccess={handleLogin} onGuest={handleGuest} />; }
+  const videos = [
+    { id: 1, title: 'My First Vlog', views: '124K', time: '2 days ago', thumb: 'https://picsum.photos/200/300?random=1' },
+    { id: 2, title: 'City Tour', views: '89K', time: '1 week ago', thumb: 'https://picsum.photos/200/300?random=2' },
+    { id: 3, title: 'Desk Setup', views: '231K', time: '3 weeks ago', thumb: 'https://picsum.photos/200/300?random=3' },
+    { id: 4, title: 'Hiking Vlog', views: '67K', time: '1 month ago', thumb: 'https://picsum.photos/200/300?random=4' },
+  ];
 
   return (
-    <PhoneContainer>
-      <div className="flex flex-col h-full w-full bg-[#0A0A0F] text-slate-100 overflow-hidden">
-        <EB><TopBar currentUser={activeUser} unreadCount={0} isPhoneFrame={true} onTogglePhoneFrame={()=>{}} onOpenCreate={()=>{ if(guardGuest('create posts')) return; setCreateDefaultColumn('feed'); setIsCreateOpen(true);}} onOpenNotifications={()=>setIsNotifOpen(true)} onOpenSearch={()=>setIsSearchOpen(true)} onOpenSettings={()=>setIsSettingsOpen(true)} onOpenProfile={()=>setIsProfileOpen(true)} onOpenWallet={()=>setIsWalletOpen(true)} onOpenFriends={()=>setIsFriendsOpen(true)} onOpenDailyReward={()=>{}} onLogout={handleLogout} /></EB>
-        <div className="flex-1 flex w-full min-h-0 overflow-hidden">
-          <EB><LeftSidebar currentUser={activeUser} onOpenDailyReward={()=>{}} onOpenWallet={()=>setIsWalletOpen(true)} onOpenFriends={()=>setIsFriendsOpen(true)} /></EB>
-          <EB><ColumnsContainer activeColumn={activeColumn} items={items} currentUser={activeUser} onLikeToggle={handleLikeToggle} onOpenDetail={setSelectedPost} onSendMessage={()=>{ if(guardGuest('send messages')) return;}} onOpenCreateForColumn={(c)=>{ if(guardGuest('create posts')) return; setCreateDefaultColumn(c); setIsCreateOpen(true);}} onOpenShare={setSelectedSharePost} onFollowToggle={()=>{ if(guardGuest('follow users')) return;}} onOpenReport={setSelectedReportPost} onOpenGift={(p)=>{ if(guardGuest('send gifts')) return; setSelectedGiftPost(p);}} /></EB>
-          <EB><RightSidebar onFollowToggle={()=>{ if(guardGuest('follow users')) return;}} onOpenChatWithUser={()=>setActiveColumn('chat' as any)} /></EB>
-        </div>
-        <EB><BottomNav activeColumn={activeColumn} onSelectColumn={setActiveColumn} unreadChats={0} /></EB>
-        <React.Suspense fallback={null}>
-          {isCreateOpen && <EB><CreatePostModal isOpen={isCreateOpen} onClose={()=>setIsCreateOpen(false)} onSubmitPost={(n:any)=>{ if(guardGuest('create posts')) return; setItems(p=>[n,...p])}} defaultColumn={createDefaultColumn} currentUser={activeUser} /></EB>}
-          {selectedPost && <EB><PostDetailModal item={selectedPost} onClose={()=>setSelectedPost(null)} onLikeToggle={()=>handleLikeToggle(selectedPost.id)} onAddComment={(txt:any)=>handleAddComment(selectedPost.id, typeof txt==='string'?txt:txt.text||'')} onShareOpen={setSelectedSharePost} onOpenReport={setSelectedReportPost} onOpenGift={setSelectedGiftPost} onOpenTip={setSelectedGiftPost} onSubscribeCreator={()=>{}} onDeletePost={async(id)=>{try{await deleteDoc(doc(db,"posts",id));}catch{}; setItems(p=>p.filter(x=>x.id!==id)); setSelectedPost(null);}} currentUserHandle={activeUser.handle} isOwner={!isGuest} /></EB>}
-          {isNotifOpen && <EB><NotificationModal isOpen={isNotifOpen} onClose={()=>setIsNotifOpen(false)} /></EB>}
-          {isSearchOpen && <EB><SearchModal isOpen={isSearchOpen} onClose={()=>setIsSearchOpen(false)} items={items} onSelectPost={setSelectedPost} /></EB>}
-          {isSettingsOpen && <EB><SettingsModal isOpen={isSettingsOpen} onClose={()=>setIsSettingsOpen(false)} profile={activeUser} currentUser={activeUser} settings={{} as any} initialTab={'profile'} onSaveProfile={()=>{}} onSaveSettings={()=>{}} onResetData={()=>{}} onLogout={handleLogout} onDeleteAccount={()=>{}} /></EB>}
-          {isProfileOpen && <EB><ProfileModal isOpen={isProfileOpen} onClose={()=>setIsProfileOpen(false)} targetUser={activeUser} currentUser={activeUser} items={items} onLikeToggle={handleLikeToggle} onOpenDetail={setSelectedPost} onOpenSettings={()=>setIsSettingsOpen(true)} onOpenFriends={()=>setIsFriendsOpen(true)} onFollowUser={()=>{}} /></EB>}
-          {isFriendsOpen && <EB><FriendsModal isOpen={isFriendsOpen} onClose={()=>setIsFriendsOpen(false)} currentUser={activeUser} initialTab={'friends'} onOpenProfileWithUser={()=>{}} onOpenChatWithUser={()=>{}} /></EB>}
-          {selectedSharePost && <EB><ShareModal item={selectedSharePost} onClose={()=>setSelectedSharePost(null)} lang={'en' as any} /></EB>}
-          {selectedReportPost && <EB><ReportModal item={selectedReportPost} onClose={()=>setSelectedReportPost(null)} onConfirmReport={()=>{}} /></EB>}
-          {isWalletOpen && <EB><WalletModal isOpen={isWalletOpen} onClose={()=>setIsWalletOpen(false)} coinBalance={isGuest?0:500} transactions={[]} onBuyCoins={()=>{}} /></EB>}
-          {selectedGiftPost && <EB><GiftModal isOpen={!!selectedGiftPost} onClose={()=>setSelectedGiftPost(null)} item={selectedGiftPost} userCoins={isGuest?0:500} onSendGift={()=>{}} onOpenBuyCoins={()=>{}} /></EB>}
-        </React.Suspense>
-        {isGuest && <div className="fixed top-14 left-1/2 -translate-x-1/2 bg-yellow-400 text-black px-4 py-1.5 rounded-full text-[11px] font-bold z-[9999]">Guest Mode - One Like Fixed ✅</div>}
+    <div className="max-w-[600px] mx-auto bg-white min-h-screen pb-24">
+      <div className="p-4 flex items-center gap-2 border-b sticky top-0 bg-white z-20">
+        <button onClick={onBack} className="w-9 h-9 rounded-full bg-gray-100">←</button>
+        <h1 className="font-bold text-lg">Profile</h1>
       </div>
-    </PhoneContainer>
+
+      <div className="p-5 flex gap-5 items-center">
+        <img src="https://i.pravatar.cc/150?img=12" className="w-24 h-24 rounded-full border-4 border-white shadow-lg" />
+        <div>
+          <h1 className="text-2xl font-extrabold">Sakib Islam</h1>
+          <p className="text-gray-500">@sakib.islam • Rangpur, BD</p>
+          <button className="mt-2 px-4 py-1.5 bg-blue-600 text-white rounded-full text-sm font-bold">Edit Profile</button>
+        </div>
+      </div>
+
+      {/* YOUR WANTED DESIGN: Like Friend Follower Subscriber */}
+      <div className="grid grid-cols-4 text-center py-5 border-y bg-gray-50/50">
+        {stats.map(s => (
+          <div key={s.label} className="border-r last:border-0">
+            <p className="font-black text-[22px]">{s.value}</p>
+            <p className="text-[13px] text-gray-500 font-medium">{s.label}</p>
+          </div>
+        ))}
+      </div>
+
+      <div className="p-4 flex justify-between items-center">
+        <h2 className="font-black text-xl">নিজের ভিডিও</h2>
+        <button className="text-blue-600 text-sm font-bold">See all ›</button>
+      </div>
+
+      {/* YOUR WANTED DESIGN: Feed Short Watch Story */}
+      <div className="flex gap-2 px-4 pb-3 overflow-x-auto">
+        {tabs.map(t => (
+          <button key={t.id} onClick={() => setActiveTab(t.id)}
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-full font-bold border whitespace-nowrap transition ${activeTab === t.id? 'bg-black text-white border-black' : 'bg-gray-100 border-gray-100 text-gray-700'}`}>
+            <span>{t.icon}</span> {t.label}
+          </button>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-2 gap-3 p-4">
+        {videos.map(v => (
+          <div key={v.id} className="rounded-2xl overflow-hidden bg-gray-100">
+            <div className="relative">
+              <img src={v.thumb} className="w-full aspect-[4/3] object-cover" />
+              <span className="absolute bottom-2 right-2 bg-black/70 text-white text-[11px] px-2 py-0.5 rounded">8:24</span>
+            </div>
+            <div className="p-2.5">
+              <p className="font-bold text-[13px] line-clamp-2">{v.title}</p>
+              <p className="text-[11px] text-gray-500 mt-1">{v.views} views • {v.time}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
   );
-    }
+}
+
+// --- MAIN APP ---
+export default function App() {
+  const [activeTab, setActiveTab] = useState('feed');
+  const [showProfilePage, setShowProfilePage] = useState(false);
+  const [showCreatePost, setShowCreatePost] = useState(false);
+  const [showLogin, setShowLogin] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [showChat, setShowChat] = useState(false);
+  const [showWallet, setShowWallet] = useState(false);
+  const [showSearch, setShowSearch] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const user = localStorage.getItem('onefeed_user');
+    if (user) setIsLoggedIn(true);
+  }, []);
+
+  if (showProfilePage) {
+    return <ProfilePage onBack={() => setShowProfilePage(false)} />;
+  }
+
+  return (
+    <div className="min-h-screen bg-[#f0f2f5] text-black">
+      <TopBar
+        onProfileClick={() => setShowProfilePage(true)}
+        onSearchClick={() => setShowSearch(true)}
+        onNotificationClick={() => setShowNotifications(true)}
+        onChatClick={() => setShowChat(true)}
+        onWalletClick={() => setShowWallet(true)}
+        onLoginClick={() => setShowLogin(true)}
+        onSettingsClick={() => setShowSettings(true)}
+        isLoggedIn={isLoggedIn}
+      />
+
+      <div className="max-w-[1400px] mx-auto flex">
+        <div className="hidden lg:block w-[280px] sticky top-0 h-screen p-3">
+          <LeftSidebar activeTab={activeTab} setActiveTab={setActiveTab} onProfileClick={() => setShowProfilePage(true)} />
+        </div>
+
+        <div className="flex-1 max-w-[680px] mx-auto w-full">
+          <StoriesBar />
+
+          <div className="bg-white mx-2 lg:mx-0 mt-3 rounded-2xl p-2 flex gap-2 sticky top-[56px] z-10 shadow-sm">
+            {[
+              { id: 'feed', label: 'ফিড', icon: '🎞️' },
+              { id: 'short', label: 'সর্ট', icon: '📱' },
+              { id: 'watch', label: 'ওয়াচ', icon: '🎬' },
+              { id: 'story', label: 'স্টরি', icon: '✨' },
+            ].map(t => (
+              <button key={t.id} onClick={() => setActiveTab(t.id)}
+                className={`flex-1 py-2.5 rounded-xl font-bold text-sm ${activeTab === t.id? 'bg-black text-white' : 'bg-gray-100 text-gray-600'}`}>
+                {t.icon} {t.label}
+              </button>
+            ))}
+          </div>
+
+          <div className="p-2 lg:p-0 lg:mt-4 space-y-4 pb-24">
+            {activeTab === 'feed' && (
+              <>
+                <div className="bg-white rounded-2xl p-4 flex gap-3">
+                  <img src="https://i.pravatar.cc/100?img=12" className="w-10 h-10 rounded-full" />
+                  <button onClick={() => setShowCreatePost(true)} className="flex-1 bg-gray-100 rounded-full text-left px-4 text-gray-500">What's on your mind, Sakib?</button>
+                </div>
+                <FeedCard />
+                <FeedCard />
+              </>
+            )}
+            {activeTab === 'short' && <ShortsCard />}
+            {activeTab === 'watch' && <WatchCard />}
+            {activeTab === 'story' && <div className="bg-white rounded-2xl p-10 text-center">Story Feed Coming Soon ✨</div>}
+            {activeTab === 'chat' && <ChatCard />}
+          </div>
+        </div>
+
+        <div className="hidden xl:block w-[320px] sticky top-0 h-screen p-3">
+          <RightSidebar />
+        </div>
+      </div>
+
+      <BottomNav activeTab={activeTab} setActiveTab={setActiveTab} onProfileClick={() => setShowProfilePage(true)} onCreatePost={() => setShowCreatePost(true)} />
+
+      {showCreatePost && <CreatePostModal onClose={() => setShowCreatePost(false)} />}
+      {showLogin && <LoginModal onClose={() => setShowLogin(false)} onLogin={() => setIsLoggedIn(true)} />}
+      {showNotifications && <NotificationModal onClose={() => setShowNotifications(false)} />}
+      {showSearch && <SearchModal onClose={() => setShowSearch(false)} />}
+      {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
+      {showWallet && <WalletModal onClose={() => setShowWallet(false)} />}
+    </div>
+  );
+      }
