@@ -52,43 +52,31 @@ export default function App(){
     return false;
   };
 
-  // === FIXED: 1 USER = 1 LIKE ONLY ===
   const handleLikeToggle = async (id: string) => {
     if(guardGuest('like posts')) return;
     const userId = getUserId();
     const post = items.find(p=>p.id===id);
     if(!post) return;
     const alreadyLiked = (post as any).likedBy?.includes(userId) || post.isLiked;
-
-    // Local update - count = likedBy length
     setItems(prev => prev.map(i => {
       if(i.id!== id) return i;
       const likedBy = (i as any).likedBy || [];
       const newLikedBy = alreadyLiked? likedBy.filter((x:any)=>x!==userId) : [...likedBy, userId];
       return {...i, isLiked:!alreadyLiked, likeCount: newLikedBy.length, likedBy: newLikedBy } as any;
     }));
-
-    // Firebase update
     try {
       const postRef = doc(db, "posts", id);
-      if(alreadyLiked){
-        await updateDoc(postRef, { likedBy: arrayRemove(userId) });
-      } else {
-        await updateDoc(postRef, { likedBy: arrayUnion(userId) });
-      }
+      if(alreadyLiked){ await updateDoc(postRef, { likedBy: arrayRemove(userId) }); }
+      else { await updateDoc(postRef, { likedBy: arrayUnion(userId) }); }
     } catch(e){ console.log(e); }
   };
 
-  // === COMMENT FIX ===
   const handleAddComment = async (postId: string, text: string) => {
     if(guardGuest('comment')) return;
     if(!text.trim()) return;
     const comment = { id: Date.now().toString(), text, userName: activeUser.name, userAvatar: activeUser.avatar, timestamp: new Date().toISOString() };
     setItems(prev=>prev.map(p=>p.id===postId?{...p, comments:[...(p as any).comments||[], comment], commentCount:(p.commentCount||0)+1}:p) as any);
-    try{
-      const postRef = doc(db, "posts", postId);
-      await updateDoc(postRef, { comments: arrayUnion(comment) });
-    }catch{}
+    try{ const postRef = doc(db, "posts", postId); await updateDoc(postRef, { comments: arrayUnion(comment) }); }catch{}
   };
 
   useEffect(()=>{
@@ -99,25 +87,7 @@ export default function App(){
         const fb = snap.docs.map(d=>{
           const data=d.data() as any;
           const likedBy = data.likedBy || [];
-          return {
-            id:d.id,
-            column:data.column||'feed',
-            text:data.text||'',
-            image:data.image||data.videoUrl||'',
-            videoUrl:data.videoUrl||null,
-            mediaType:'image',
-            likeCount: likedBy.length, // FIX: like = likedBy length so never 2 likes
-            views:0,
-            commentCount:(data.comments?.length||0),
-            isLiked: likedBy.includes(userId),
-            likedBy: likedBy,
-            timestamp:'Just now',
-            author:{name:data.userName||'User',handle:data.userHandle||'@user',avatar:data.userAvatar||'',verified:false,online:true,isFollowing:false},
-            tags:[],
-            comments:data.comments||[],
-            messages:[],
-            userId:data.userId
-          } as any;
+          return { id:d.id, column:data.column||'feed', text:data.text||'', image:data.image||data.videoUrl||'', videoUrl:data.videoUrl||null, mediaType:'image', likeCount: likedBy.length, views:0, commentCount:(data.comments?.length||0), isLiked: likedBy.includes(userId), likedBy: likedBy, timestamp:'Just now', author:{name:data.userName||'User',handle:data.userHandle||'@user',avatar:data.userAvatar||'',verified:false,online:true,isFollowing:false}, tags:[], comments:data.comments||[], messages:[], userId:data.userId } as any;
         });
         if(fb.length>0) setItems(fb);
       });
@@ -158,4 +128,4 @@ export default function App(){
       </div>
     </PhoneContainer>
   );
-  }
+    }
