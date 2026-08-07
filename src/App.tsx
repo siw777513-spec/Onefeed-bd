@@ -8,7 +8,7 @@ type Post = { id: string; text: string; image: string; videoUrl: string; userNam
 type UserData = { name: string; bio: string; location: string; website: string; language: string; }
 
 const CLOUD_NAME = "bvvoprge";
-const UPLOAD_PRESET = "onefeed_unsigned";
+const UPLOAD_PRESET = "onefeed_preset";
 
 function ProfilePage({ onLogout, postsCount }: { onLogout: ()=>void, postsCount: number }) {
   const user = auth.currentUser;
