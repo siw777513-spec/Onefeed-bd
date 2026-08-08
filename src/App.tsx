@@ -316,5 +316,5 @@ function FeedApp({onLogout}:{onLogout:()=>void}){
        <p className="text-white/40 text-[10px] font-black mb-3">APPEARANCE</p>
        <div className="space-y-3">
         <div className="flex justify-between items-center"><p className="text-white text-xs">🌙 Dark Mode</p><button className="w-12 h-6 rounded-full bg-cyan-400 flex items-center p-1 justify-end"><div className="w-4 h-4 rounded-full bg-white"/></button></div>
-        <button className="w-full flex justify-between items-center"><p className="text-white text-xs">🌐 Language</p><p className="text-white/40 text-[10px]">বাংলা / English ›</p></button>
-        <button className="w-full flex justify-between items-center"><p className="text-white text-xs">🔤 Font
+        <button className="w-full flex justify-between items-center"><p className="text-white text-xs">🌐 Language</p><p className="text-white/40 text-[10px]">Bangla / English ›</p></button>
+        <button className="w-full flex justify-between items-center"><p className="text-white text-xs">🔤 Fon
