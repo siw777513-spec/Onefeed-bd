@@ -267,51 +267,54 @@ function FeedApp({onLogout}:{onLogout:()=>void}){
       {my.map(p=>p.image?<img key={p.id} src={p.image} className="h-24 w-full object-cover rounded-xl"/>:p.videoUrl?<video key={p.id} src={p.videoUrl} className="h-24 w-full object-cover rounded-xl"/>:<div key={p.id} className="h-24 bg-white/10 rounded-xl p-2 text-[10px] text-white/30">{p.text.slice(0,20)}</div>)}
      </div>
     </div>}
-    {bot==='Settings'&&<div className="flex-1 overflow-y-auto pb-28">
+        {bot==='Settings'&&<div className="flex-1 overflow-y-auto pb-28">
      <div className="flex gap-3 items-center mb-5">
       <button onClick={()=>setBot('Profile')} className="w-8 h-8 rounded-full bg-white/10 text-white">‹</button>
       <h2 className="text-white font-black">Settings</h2>
      </div>
      <div className="space-y-3">
       <div className="bg-white/10 border border-white/15 rounded-[20px] p-4">
-       <div className="flex justify-between items-center">
-        <p className="text-white text-xs font-bold">{priv?'🔒 Private':'🌍 Public'}</p>
-        <button onClick={togglePriv} className={`w-12 h-6 rounded-full flex items-center p-1 ${priv?'bg-cyan-400 justify-end':'bg-white/20 justify-start'}`}><div className="w-4 h-4 rounded-full bg-white"/></button>
+       <p className="text-white/40 text-[10px] font-black mb-3">PRIVACY</p>
+       <div className="space-y-3">
+        <div className="flex justify-between items-center">
+         <p className="text-white text-xs">{priv?'🔒 Private Account':'🌍 Public Account'}</p>
+         <button onClick={togglePriv} className={`w-12 h-6 rounded-full flex items-center p-1 ${priv?'bg-cyan-400 justify-end':'bg-white/20 justify-start'}`}><div className="w-4 h-4 rounded-full bg-white"/></button>
+        </div>
+        <div className="flex justify-between items-center">
+         <p className="text-white text-xs">👁️ Hide Like Count</p>
+         <button className="w-12 h-6 rounded-full bg-white/20 flex items-center p-1"><div className="w-4 h-4 rounded-full bg-white"/></button>
+        </div>
+        <div className="flex justify-between items-center">
+         <p className="text-white text-xs">🟢 Show Online Status</p>
+         <button className="w-12 h-6 rounded-full bg-cyan-400 flex items-center p-1 justify-end"><div className="w-4 h-4 rounded-full bg-white"/></button>
+        </div>
+        <div className="flex justify-between items-center">
+         <p className="text-white text-xs">✉️ Who can message</p>
+         <p className="text-white/40 text-[10px]">Everyone ›</p>
+        </div>
        </div>
       </div>
-      <button onClick={onLogout} className="w-full py-3 rounded-full bg-red-500/10 border border-red-500/20 text-red-300 text-xs font-black">LOGOUT</button>
-     </div>
-    </div>}
-    <div className="absolute bottom-3 left-3 right-3 bg-white/10 backdrop-blur-[30px] border border-white/20 rounded-[28px] flex justify-around items-center py-2">
-     {[{k:'Home',i:'⌂'},{k:'Search',i:'⌕'},{k:'Add',i:'+'},{k:'Inbox',i:'✉'},{k:'Profile',i:'◍'}].map(b=> b.k==='Add'? <button key={b.k} onClick={()=>setShow(true)} className="w-10 h-10 rounded-full bg-white text-black font-black">+</button>:<button key={b.k} onClick={()=>setBot(b.k)} className={`w-8 h-8 rounded-full ${bot===b.k?'bg-white/15 text-white':'text-white/30'}`}>{b.i}</button>)}
-    </div>
-   </div>
-   {show&&<div className="absolute inset-0 z-50 bg-black/50 backdrop-blur-xl flex items-center justify-center p-4">
-    <div className="w-full bg-white/15 border border-white/20 rounded-[20px] p-4">
-     <div className="flex justify-between mb-3"><h3 className="text-white font-bold">Create</h3><button onClick={()=>setShow(false)} className="w-7 h-7 rounded-full bg-white/10 text-white/50">✕</button></div>
-     <div className="flex gap-1 mb-3 bg-black/20 p-1 rounded-full">
-      {(['feed','short','story','watch'] as const).map(t=><button key={t} onClick={()=>setCt(t)} className={`flex-1 py-1.5 rounded-full text-[8px] font-black ${ct===t?'bg-white text-black':'text-white/40'}`}>{t.toUpperCase()}</button>)}
-     </div>
-     <textarea value={txt} onChange={e=>setTxt(e.target.value)} placeholder="What's up?" className="w-full h-16 bg-white/10 border border-white/10 rounded-xl p-2 text-xs text-white outline-none"/>
-     <label className="block mt-2 py-2 rounded-xl bg-white/5 border border-dashed border-white/10 text-center text-xs text-white/40 cursor-pointer">{up?'Uploading...':media?'✅ Done':'📎 Media'}<input type="file" accept="video/*,image/*" onChange={upload} className="hidden"/></label>
-     <button onClick={create} className="w-full mt-3 py-2.5 rounded-full bg-white text-black font-black text-xs">PUBLISH</button>
-    </div>
-   </div>}
-  </div>
- </div>
- </div>
- );
-}
-export default function App(){
- const [mode,setMode]=useState<'none'|'guest'|'auth'>('none');
- const [chk,setChk]=useState(true);
- useEffect(()=>{
-  return onAuthStateChanged(auth,u=>{
-   if(u) setMode('auth'); else if(mode!=='guest') setMode('none'); setChk(false);
-  });
- },[]);
- if(chk) return <div className="min-h-screen bg-black flex items-center justify-center text-white/20">Loading...</div>;
- if(mode==='none') return <AuthPage onGuest={()=>setMode('guest')} />;
- return <FeedApp onLogout={async()=>{ await signOut(auth); setMode('none'); }} />;
-   }
-   
+      <div className="bg-white/10 border border-white/15 rounded-[20px] p-4">
+       <p className="text-white/40 text-[10px] font-black mb-3">ACCOUNT</p>
+       <div className="space-y-3">
+        <button onClick={()=>setBot('EditProfile')} className="w-full flex justify-between items-center"><p className="text-white text-xs">✏️ Edit Profile</p><p className="text-white/20">›</p></button>
+        <button className="w-full flex justify-between items-center"><p className="text-white text-xs">🔑 Change Password</p><p className="text-white/20">›</p></button>
+        <button className="w-full flex justify-between items-center"><p className="text-white text-xs">🚫 Blocked Users</p><p className="text-white/20">0 ›</p></button>
+        <button className="w-full flex justify-between items-center"><p className="text-white text-xs">📥 Download My Data</p><p className="text-white/20">›</p></button>
+       </div>
+      </div>
+      <div className="bg-white/10 border border-white/15 rounded-[20px] p-4">
+       <p className="text-white/40 text-[10px] font-black mb-3">NOTIFICATIONS</p>
+       <div className="space-y-3">
+        <div className="flex justify-between items-center"><p className="text-white text-xs">❤️ Like Notifications</p><button className="w-12 h-6 rounded-full bg-cyan-400 flex items-center p-1 justify-end"><div className="w-4 h-4 rounded-full bg-white"/></button></div>
+        <div className="flex justify-between items-center"><p className="text-white text-xs">💬 Comment Notifications</p><button className="w-12 h-6 rounded-full bg-cyan-400 flex items-center p-1 justify-end"><div className="w-4 h-4 rounded-full bg-white"/></button></div>
+        <div className="flex justify-between items-center"><p className="text-white text-xs">👤 Follow Notifications</p><button className="w-12 h-6 rounded-full bg-white/20 flex items-center p-1"><div className="w-4 h-4 rounded-full bg-white"/></button></div>
+        <div className="flex justify-between items-center"><p className="text-white text-xs">✉️ Message Notifications</p><button className="w-12 h-6 rounded-full bg-cyan-400 flex items-center p-1 justify-end"><div className="w-4 h-4 rounded-full bg-white"/></button></div>
+       </div>
+      </div>
+      <div className="bg-white/10 border border-white/15 rounded-[20px] p-4">
+       <p className="text-white/40 text-[10px] font-black mb-3">APPEARANCE</p>
+       <div className="space-y-3">
+        <div className="flex justify-between items-center"><p className="text-white text-xs">🌙 Dark Mode</p><button className="w-12 h-6 rounded-full bg-cyan-400 flex items-center p-1 justify-end"><div className="w-4 h-4 rounded-full bg-white"/></button></div>
+        <button className="w-full flex justify-between items-center"><p className="text-white text-xs">🌐 Language</p><p className="text-white/40 text-[10px]">বাংলা / English ›</p></button>
+        <button className="w-full flex justify-between items-center"><p className="text-white text-xs">🔤 Font
