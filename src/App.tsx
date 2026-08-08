@@ -163,7 +163,7 @@ function FeedApp({onLogout}:{onLogout:()=>void}){
           <img src={`https://i.pravatar.cc/100?u=${p.userId}`} className="w-7 h-7 rounded-full"/>
           <p className="text-white text-xs font-bold">{p.userName}</p>
          </div>
-         <button onClick={()=>openChat(p.userId,p.userName)} className="w-7 h-7 rounded-full bg-white/10 text-white text-[10px]">✉</button>
+         <button onClick={()=>openChat(p.userId,p.userName)} className="w-7 h-7 rounded-full bg-cyan-500 text-white text-[10px] font-bold">✉</button>
         </div>
         {p.image&&<img src={p.image} className="w-full"/>}
         {p.videoUrl&&<video src={p.videoUrl} controls className="w-full"/>}
@@ -223,18 +223,19 @@ function FeedApp({onLogout}:{onLogout:()=>void}){
     </div>}
     {bot==='Inbox'&&<div className="flex-1 pb-24 flex flex-col">
      <h2 className="text-white font-black text-lg">Messages 💬</h2>
-     <p className="text-white/30 text-[10px] mb-3">Chat with users</p>
+     <p className="text-white/30 text-[10px] mb-3">All users - tap to chat</p>
      <div className="space-y-2 overflow-y-auto">
-      {posts.filter((v,i,a)=>a.findIndex(t=>t.userId===v.userId)===i && v.userId!==cur?.uid).map(p=>
-       <div key={p.userId} className="bg-white/10 border border-white/15 rounded-2xl p-3 flex gap-3 items-center">
-        <img src={`https://i.pravatar.cc/100?u=${p.userId}`} className="w-10 h-10 rounded-full"/>
-        <div className="flex-1 cursor-pointer" onClick={()=>openChat(p.userId,p.userName)}>
-         <p className="text-white text-xs font-bold">{p.userName}</p>
+      {Object.entries(uMap).filter(([uid])=>uid!==cur?.uid).map(([uid,udata]:any)=>
+       <div key={uid} className="bg-white/10 border border-white/15 rounded-2xl p-3 flex gap-3 items-center">
+        <img src={`https://i.pravatar.cc/100?u=${uid}`} className="w-10 h-10 rounded-full"/>
+        <div className="flex-1 cursor-pointer" onClick={()=>openChat(uid,udata.userName||uid.slice(0,6))}>
+         <p className="text-white text-xs font-bold">{udata.userName||'User'}</p>
          <p className="text-white/30 text-[10px]">Tap to chat</p>
         </div>
-        <button onClick={()=>openChat(p.userId,p.userName)} className="w-8 h-8 rounded-full bg-white/10 text-white">✉</button>
+        <button onClick={()=>openChat(uid,udata.userName||uid.slice(0,6))} className="w-8 h-8 rounded-full bg-white text-black font-bold">✉</button>
        </div>
       )}
+      {Object.keys(uMap).length<=1&&<p className="text-white/20 text-xs text-center mt-10">No other users found<br/>Create 2nd account</p>}
      </div>
     </div>}
     {bot==='Chat'&&chatUser&&<div className="flex-1 flex flex-col pb-3">
@@ -312,5 +313,5 @@ export default function App(){
  if(chk) return <div className="min-h-screen bg-black flex items-center justify-center text-white/20">Loading...</div>;
  if(mode==='none') return <AuthPage onGuest={()=>setMode('guest')} />;
  return <FeedApp onLogout={async()=>{ await signOut(auth); setMode('none'); }} />;
-                                  }
+   }
    
