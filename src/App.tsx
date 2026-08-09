@@ -118,7 +118,7 @@ className={`flex-1 py-2 rounded-full text-[10px] font-black ${tab===k?'bg-white 
 </div>
 <div className="flex-1 overflow-y-auto pb-28 mt-3 space-y-3">
 {filt.map(p=>{const liked=p.likes?.includes(cur?.uid||'');return(
-<div key={p.id} className="rounded-[24px] bg-white/[0.06] backdrop-blur-[30px] border border-white/[0.12] overflow-hidden">
+<div key={p.id} className="rounded-[28px] bg-white/[0.08] backdrop-blur-[40px] border border-white/[0.15] shadow-[inset_0_1px_1px_rgba(255,255,255,0.25),0_20px_60px_rgba(0,0,0,0.5)] border border-white/[0.12] overflow-hidden">
 <div className="flex justify-between p-3">
 <div onClick={()=>openProfile(p.userId,p.userName)} className="flex gap-2 items-center">
 <img src={`https://i.pravatar.cc/100?u=${p.userId}`} className="w-7 h-7 rounded-full border border-white/20"/>
